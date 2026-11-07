@@ -1,16 +1,17 @@
 # Changelog
 
-## 0.5.1
+## 0.5.2 (MCP2UNITY experimental rebuild)
 
-- Fixed Unity 2022.3 compiler ambiguity between `UnityEditor.PackageInfo` and `UnityEditor.PackageManager.PackageInfo` in `CompanionManager`.
-- No protocol, tool, port, or companion behavior changes.
+- Restored all 50 source files from upstream v0.5.1 without changing the baseline IPC/companion lifecycle.
+- Added 13 modular v0.6.0 Editor source files with their corresponding original .meta files (17 new tools).
+- Wired new catalog entries and dispatcher fallback while retaining original implementations for 21 legacy tools.
+- Adopted v0.6.0 reviewed change-set permissions, Editor-action settings, path checks, and Test Framework assembly references.
+- Added native MCP image envelope forwarding, JSON array/null preservation and a real Unity IPC self-test.
+- Rejected expired requests and prevented automatic replay of interrupted in-flight operations after domain reload.
+- Added six adapted Unity integration tests and Windows PowerShell companion regression tests.
+- Assigned independent UPM package ID `com.musafirex.mcp2unity` and version 0.5.2.
+- **Status:** Compiling in Unity and passing real Windows/Unity tests are still required; v0.6.0 defects are not yet root-caused.
 
-## 0.5.0
+## Original upstream changelog
 
-- Moved the MCP TCP listener out of Unity into a standalone PowerShell companion process.
-- Moved ngrok ownership to the companion so both remain alive during Unity script compilation and domain reload.
-- Added file-based IPC under `Library/WasimUnityMcpBridge/Companion` for Unity tool requests and responses.
-- Added Unity heartbeat and graceful `Unity is compiling/reloading` tool errors without disconnecting ChatGPT.
-- Added companion start, stop, restart, force-stop, status, logs and self-test controls in the Unity window.
-- Removed the reloadable Unity-hosted MCP socket and its port-rebind lifecycle.
-- Preserved the v0.4 tool catalogue and selected-folder analyzer.
+See the original v0.5.1 release at https://github.com/wasim-development/wasim-unity-mcp-bridge/releases/tag/v0.5.1.
