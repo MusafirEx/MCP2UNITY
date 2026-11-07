@@ -108,9 +108,9 @@ namespace WasimDevelopment.UnityMcpBridge
             try
             {
                 if (!File.Exists(UnityStatusPath)) return false;
-                JObject status = JObject.Parse(File.ReadAllText(UnityStatusPath));
-                if (!DateTime.TryParse(status["timestampUtc"]?.Value<string>(), out DateTime time)) return false;
-                return (DateTime.UtcNow - time.ToUniversalTime()).TotalSeconds <= maximumAgeSeconds;
+                JObject status = AtomicFile.ReadObject(UnityStatusPath);
+                if (!AtomicFile.TryUtc(status["timestampUtc"]?.Value<string>(), out DateTime time)) return false;
+                return (DateTime.UtcNow - time).TotalSeconds <= maximumAgeSeconds;
             }
             catch { return false; }
         }
