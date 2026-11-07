@@ -62,7 +62,7 @@ namespace WasimDevelopment.UnityMcpBridge
                         ReadString(arguments, "expectedSha256", string.Empty),
                         ReadString(arguments, "newContent", string.Empty),
                         ReadString(arguments, "summary", string.Empty));
-                default: throw new ArgumentException("Unknown Unity MCP tool: " + toolName);
+                default: return ExtendedTools.Execute(toolName, arguments);
             }
         }
 
