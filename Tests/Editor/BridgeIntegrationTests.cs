@@ -25,18 +25,27 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             _oldPermission = BridgePreferences.EnableChangeSets;
             _folder = null; _scenePath = null; _restoreEmpty = false;
             _originalActive = SceneManager.GetActiveScene().path;
-            if (SceneManager.sceneCount == 1)
-            {
-                Scene initial = SceneManager.GetSceneAt(0);
-                _restoreEmpty = string.IsNullOrEmpty(initial.path) && !initial.isDirty && initial.rootCount == 0;
-            }
+            // The Unity Test Runner can leave a clean, untitled scene open beside a
+            // saved scene. NewScene(Additive) refuses to run while it is loaded.
+            // Never close dirty or nonempty untitled scenes (they may contain user work).
+            var cleanUntitledScenes = new List<Scene>();
+            bool hasSavedScene = false;
             for (int i = 0; i < SceneManager.sceneCount; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
-                // Unity Test Runner may create a pristine untitled scene alongside the saved scene.
-                // Do not skip the entire suite for an empty, clean runner-owned scene.
                 if (scene.isDirty || (string.IsNullOrEmpty(scene.path) && scene.rootCount != 0))
                     Assert.Ignore("Save all modified or non-empty untitled scenes before bridge integration tests.");
+                if (string.IsNullOrEmpty(scene.path)) cleanUntitledScenes.Add(scene);
+                else hasSavedScene = true;
+            }
+            _restoreEmpty = !hasSavedScene;
+            if (hasSavedScene)
+            {
+                // Only remove completely blank, unmodified untitled scenes.
+                // All named scenes remain loaded and the test scene is additive.
+                foreach (Scene untitled in cleanUntitledScenes)
+                    if (untitled.IsValid() && untitled.isLoaded)
+                        EditorSceneManager.CloseScene(untitled, true);
             }
             BridgePreferences.EnableChangeSets = true;
             _folder = "Assets/WasimMcpTest_" + Guid.NewGuid().ToString("N");
