@@ -32,7 +32,7 @@ function Write-TextAtomic([string]$Path, [string]$Text) {
 }
 
 function Write-JsonAtomic([string]$Path, $Value) {
-    Write-TextAtomic $Path ($Value | ConvertTo-Json -Depth 100 -Compress)
+    Write-TextAtomic $Path (ConvertTo-Json -InputObject $Value -Depth 100 -Compress)
 }
 
 function Add-Log([string]$Message) {
@@ -245,8 +245,11 @@ function Invoke-UnityTool([string]$Name, $Arguments) {
                 $response = Read-JsonFile $responsePath
                 Remove-Item -LiteralPath $responsePath -Force -ErrorAction SilentlyContinue
                 if ([bool]$response.success) {
-                    $text = $response.result | ConvertTo-Json -Depth 100
-                    return [ordered]@{ content=@([ordered]@{type='text';text=$text}); isError=$false }
+                    if ($null -ne $response.mcpContent) {
+                        return [ordered]@{content=@($response.mcpContent);isError=$false}
+                    }
+                    $text = ConvertTo-Json -InputObject $response.result -Depth 100 -Compress
+                    return [ordered]@{ content=@([ordered]@{type='text';text=[string]$text}); isError=$false }
                 }
                 return New-ToolError ('Unity tool failed: ' + [string]$response.error)
             } catch {

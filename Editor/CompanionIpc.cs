@@ -186,6 +186,11 @@ namespace WasimDevelopment.UnityMcpBridge
                     ["result"] = result,
                     ["completedUtc"] = DateTime.UtcNow.ToString("O")
                 };
+                if (result is JObject envelope && envelope["_mcpContent"] is JArray content)
+                {
+                    response["mcpContent"] = content;
+                    response["result"] = null;
+                }
                 AtomicWrite(Path.Combine(ResponsesPath, requestId + ".json"), response.ToString(Formatting.None));
                 BridgeRequestHistory.Add("tools/call", toolName, true, "Completed through companion IPC");
             }

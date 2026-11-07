@@ -2,7 +2,7 @@ namespace WasimDevelopment.UnityMcpBridge
 {
     internal static class BridgeVersion
     {
-        public const string PackageVersion = "0.5.1";
-        public const string DisplayName = "Wasim Unity MCP Bridge";
+        public const string PackageVersion = "0.5.2";
+        public const string DisplayName = "MCP2UNITY";
     }
 }
