@@ -147,12 +147,21 @@ namespace WasimDevelopment.UnityMcpBridge
                 string id = SessionState.GetString(ActiveKey, "");
                 if (string.IsNullOrEmpty(id)) return;
                 JObject report = TestResults();
-                report["status"] = result.TestStatus.ToString();
+                int executedCount = result.PassCount + result.FailCount + result.SkipCount + result.InconclusiveCount;
+                bool noTestsFound = executedCount == 0;
+                string testStatus = noTestsFound ? "NoTestsFound" : result.TestStatus.ToString();
+                report["status"] = testStatus;
                 report["passed"] = result.PassCount; report["failed"] = result.FailCount;
                 report["skipped"] = result.SkipCount; report["inconclusive"] = result.InconclusiveCount;
+                report["executed"] = executedCount;
+                if (noTestsFound)
+                    report["message"] = "Unity Test Runner found zero tests. For Git-installed packages, add com.musafirex.mcp2unity to the testables array in Packages/manifest.json, then reimport and retry.";
                 report["durationSeconds"] = result.Duration; report["finishedUtc"] = DateTime.UtcNow.ToString("O");
                 AtomicFile.WriteText(ResultsPath, report.ToString());
-                JObject record = Find(id); record["status"] = "Completed"; record["testStatus"] = result.TestStatus.ToString(); Save();
+                JObject record = Find(id);
+                record["status"] = noTestsFound ? "Failed" : "Completed"; record["testStatus"] = testStatus;
+                if (noTestsFound) record["message"] = (string)report["message"];
+                Save();
                 SessionState.EraseString(ActiveKey);
             }
             private static string Trim(string value) => value == null ? "" : value.Length > 3000 ? value.Substring(0, 3000) : value;

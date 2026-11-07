@@ -131,7 +131,11 @@ namespace WasimDevelopment.UnityMcpBridge
             if (EditorApplication.timeSinceStartup >= _nextHeartbeatTime)
             {
                 _nextHeartbeatTime = EditorApplication.timeSinceStartup + HeartbeatIntervalSeconds;
-                WriteUnityStatus(EditorApplication.isCompiling ? "compiling" : "ready");
+                // The PowerShell companion may briefly hold the status file open on Windows.
+                // A missed heartbeat is retried next tick, rather than spamming the Unity Console.
+                try { WriteUnityStatus(EditorApplication.isCompiling ? "compiling" : "ready"); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
                 WriteCatalogIfMissing();
             }
             ProcessPendingRequests();
@@ -255,17 +259,9 @@ namespace WasimDevelopment.UnityMcpBridge
 
         private static void AtomicWrite(string path, string content)
         {
-            string temp = path + ".tmp-" + Guid.NewGuid().ToString("N");
-            File.WriteAllText(temp, content ?? string.Empty, new UTF8Encoding(false));
-            try
-            {
-                if (File.Exists(path)) File.Delete(path);
-                File.Move(temp, path);
-            }
-            finally
-            {
-                try { if (File.Exists(temp)) File.Delete(temp); } catch { }
-            }
+            // AtomicFile retries transient sharing violations and uses File.Replace
+            // instead of a delete/move window that can leave the status file absent.
+            AtomicFile.WriteText(path, content);
         }
     }
 }
