@@ -31,3 +31,12 @@
 6. Regression test coverage for the specific v0.6.0 error is added once its reproducible log is available.
 
 No item is claimed as passed until tested on the target Windows + Unity setup.
+
+## Package-aware parity backport
+
+- v0.6.0-style script discovery now uses Unity AssetDatabase registered package paths, including Git-installed PackageCache files, while retaining v0.5.1 declaration/reference classifications.
+- Selected folder analysis can read registered `Packages/` folders when **Allow package scripts** is explicitly enabled; writes remain limited to `Assets/`.
+- Unity Console reflection prefers the message field and supports v0.6.0 classification flags.
+- Companion status JSON is read with atomic-file-friendly sharing.
+- EditMode test fixtures permit pristine untitled Test Runner scenes, and test results retain individual skipped reasons.
+- These are selective backports. The v0.5.1 PowerShell listener, companion lifecycle, and core IPC architecture are retained.
