@@ -1,8 +1,7 @@
 {
   "name": "WasimUnityMcpBridge.Editor.Tests",
   "references": [
-    "WasimUnityMcpBridge.Editor",
-    "Unity.Newtonsoft.Json"
+    "WasimUnityMcpBridge.Editor"
   ],
   "includePlatforms": [
     "Editor"
@@ -10,5 +9,10 @@
   "optionalUnityReferences": [
     "TestAssemblies"
   ],
-  "autoReferenced": false
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Newtonsoft.Json.dll",
+    "nunit.framework.dll"
+  ]
 }
