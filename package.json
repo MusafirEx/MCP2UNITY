@@ -1,0 +1,26 @@
+{
+  "name": "com.musafirex.mcp2unity",
+  "version": "0.5.2",
+  "displayName": "MCP2UNITY",
+  "description": "Unity 2022.3 MCP companion with v0.5.1 transport and opt-in modular v0.6.0 inspection, review and diagnostics tools.",
+  "unity": "2022.3",
+  "author": {
+    "name": "MusafirEx / Wasim Development"
+  },
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.test-framework": "1.1.33"
+  },
+  "keywords": [
+    "mcp",
+    "chatgpt",
+    "assistant",
+    "editor",
+    "debugging",
+    "ngrok",
+    "prefab",
+    "animator",
+    "code-review",
+    "folder-analysis"
+  ]
+}
