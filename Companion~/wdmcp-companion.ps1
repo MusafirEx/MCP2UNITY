@@ -235,6 +235,7 @@ function Invoke-UnityTool([string]$Name, $Arguments) {
         name = $Name
         arguments = $(if ($null -eq $Arguments) { [ordered]@{} } else { $Arguments })
         createdUtc = [DateTime]::UtcNow.ToString('O')
+        expiresUtc = [DateTime]::UtcNow.AddSeconds([int]$Config.requestTimeoutSeconds).ToString('O')
     }
     Write-JsonAtomic $requestPath $request
 

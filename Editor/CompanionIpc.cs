@@ -174,6 +174,9 @@ namespace WasimDevelopment.UnityMcpBridge
             {
                 JObject request = JObject.Parse(File.ReadAllText(processingPath));
                 requestId = request["id"]?.Value<string>() ?? requestId;
+                if (AtomicFile.TryUtc(request["expiresUtc"]?.Value<string>(), out DateTime expiry)
+                    && DateTime.UtcNow > expiry)
+                    throw new InvalidOperationException("Tool request expired before Unity could process it.");
                 string toolName = request["name"]?.Value<string>() ?? string.Empty;
                 JObject arguments = request["arguments"] as JObject ?? new JObject();
                 if (string.IsNullOrWhiteSpace(toolName)) throw new InvalidOperationException("IPC request has no tool name.");
@@ -223,9 +226,14 @@ namespace WasimDevelopment.UnityMcpBridge
             {
                 try
                 {
-                    string destination = Path.Combine(RequestsPath, Path.GetFileName(file));
-                    if (File.Exists(destination)) File.Delete(file);
-                    else File.Move(file, destination);
+                    string response = Path.Combine(ResponsesPath, Path.GetFileName(file));
+                    if (!File.Exists(response))
+                    {
+                        // A reload may have interrupted a side effect. Never replay an uncertain operation.
+                        AtomicWrite(response, new JObject { ["id"] = Path.GetFileNameWithoutExtension(file),
+                            ["success"] = false, ["error"] = "Unity reloaded during this request; inspect proposal/session state before retrying." }.ToString(Formatting.None));
+                    }
+                    File.Delete(file);
                 }
                 catch { }
             }
