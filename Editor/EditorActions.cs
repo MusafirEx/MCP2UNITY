@@ -134,12 +134,14 @@ namespace WasimDevelopment.UnityMcpBridge
             public void TestStarted(ITestAdaptor test) { }
             public void TestFinished(ITestResultAdaptor result)
             {
-                if (string.IsNullOrEmpty(SessionState.GetString(ActiveKey, "")) || result.HasChildren || result.TestStatus != TestStatus.Failed) return;
+                if (string.IsNullOrEmpty(SessionState.GetString(ActiveKey, "")) || result.HasChildren) return;
+                if (result.TestStatus != TestStatus.Failed && result.TestStatus != TestStatus.Skipped) return;
                 JObject report = TestResults();
-                var failures = report["failures"] as JArray ?? new JArray();
-                if (failures.Count < 100) failures.Add(new JObject { ["test"] = result.FullName,
+                string key = result.TestStatus == TestStatus.Skipped ? "skips" : "failures";
+                var details = report[key] as JArray ?? new JArray();
+                if (details.Count < 100) details.Add(new JObject { ["test"] = result.FullName,
                     ["message"] = Trim(result.Message), ["stackTrace"] = Trim(result.StackTrace) });
-                report["failures"] = failures;
+                report[key] = details;
                 AtomicFile.WriteText(ResultsPath, report.ToString());
             }
             public void RunFinished(ITestResultAdaptor result)

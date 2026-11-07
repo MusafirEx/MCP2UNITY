@@ -33,7 +33,10 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             for (int i = 0; i < SceneManager.sceneCount; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
-                if (!_restoreEmpty && (scene.isDirty || string.IsNullOrEmpty(scene.path))) Assert.Ignore("Save all open scenes before bridge integration tests.");
+                // Unity Test Runner may create a pristine untitled scene alongside the saved scene.
+                // Do not skip the entire suite for an empty, clean runner-owned scene.
+                if (scene.isDirty || (string.IsNullOrEmpty(scene.path) && scene.rootCount != 0))
+                    Assert.Ignore("Save all modified or non-empty untitled scenes before bridge integration tests.");
             }
             BridgePreferences.EnableChangeSets = true;
             _folder = "Assets/WasimMcpTest_" + Guid.NewGuid().ToString("N");
