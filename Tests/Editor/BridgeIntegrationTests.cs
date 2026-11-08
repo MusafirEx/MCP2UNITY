@@ -159,6 +159,14 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             Assert.Less(Quaternion.Angle(Quaternion.Euler(0, 90, 0), child.transform.rotation), 1e-3f);
             Assert.Less(Vector3.Distance(new Vector3(3, 3, 3), child.transform.lossyScale), 1e-3f);
 
+            // Unity may mark the temporary test scene dirty after a change-set
+            // apply. Before proposing a second guarded change, save ONLY this
+            // fixture scene; never save unrelated scenes containing user work.
+            Scene fixture = SceneManager.GetSceneByPath(_scenePath);
+            Assert.IsTrue(fixture.IsValid() && fixture.isLoaded);
+            if (fixture.isDirty)
+                Assert.IsTrue(EditorSceneManager.SaveScene(fixture));
+
             JObject relative = (JObject)ExtendedTools.Execute("unity_set_transform", new JObject
             {
                 ["objectId"] = ObjectAccess.Id(child),
