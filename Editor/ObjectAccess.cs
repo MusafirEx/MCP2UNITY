@@ -74,7 +74,22 @@ namespace WasimDevelopment.UnityMcpBridge
         public static Type FindType(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("A fully qualified type name is required.");
-            Type[] matches = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType(name, false)).Where(t => t != null).ToArray();
+            // Unity's built-in components are sometimes also exposed through facade
+            // assemblies. Resolve their authoritative engine assembly first.
+            if (name.StartsWith("UnityEngine.", StringComparison.Ordinal))
+            {
+                Assembly[] engineAssemblies = {
+                    typeof(Component).Assembly, typeof(Rigidbody).Assembly,
+                    typeof(Animator).Assembly, typeof(Renderer).Assembly
+                };
+                foreach (Assembly assembly in engineAssemblies.Distinct())
+                {
+                    Type builtIn = assembly.GetType(name, false);
+                    if (builtIn != null) return builtIn;
+                }
+            }
+            Type[] matches = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(a => a.GetType(name, false)).Where(t => t != null).Distinct().ToArray();
             if (matches.Length != 1) throw new ArgumentException("Type is unavailable or ambiguous: " + name);
             return matches[0];
         }

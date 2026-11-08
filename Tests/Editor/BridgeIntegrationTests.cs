@@ -92,6 +92,11 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 ["propertyPath"] = "m_IsKinematic", ["value"] = true });
             Assert.IsFalse(body.isKinematic);
             ChangeSets.Approve((string)set["id"]); Assert.IsTrue(body.isKinematic);
+            // Keep the fixture's own scene clean before requesting a guarded rollback.
+            // Never save unrelated scenes: they may contain user edits.
+            Scene fixture = SceneManager.GetSceneByPath(_scenePath);
+            if (fixture.IsValid() && fixture.isDirty)
+                Assert.IsTrue(EditorSceneManager.SaveScene(fixture));
             JObject rollback = ChangeSets.ProposeRollback((string)set["id"], "Test rollback");
             _proposals.Add((string)rollback["id"]); ChangeSets.Approve((string)rollback["id"]);
             GameObject restored = SceneManager.GetSceneByPath(_scenePath).GetRootGameObjects().Single(g => g.name == "BridgeTestRoot");
