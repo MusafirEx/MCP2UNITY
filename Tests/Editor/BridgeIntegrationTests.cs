@@ -149,6 +149,22 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
+        public void RuntimeAssertionsCompareEquivalentJsonNumbersExactly()
+        {
+            Assert.IsTrue(ProjectDiagnostics.ExactRuntimeValueEquals(new JValue(1.0f), new JValue(1)));
+            Assert.IsTrue(ProjectDiagnostics.ExactRuntimeValueEquals(new JValue(1.0d), new JValue(1L)));
+            Assert.IsFalse(ProjectDiagnostics.ExactRuntimeValueEquals(new JValue(1.5f), new JValue(1)));
+            Assert.IsFalse(ProjectDiagnostics.ExactRuntimeValueEquals(new JValue(true), new JValue(1)));
+            Assert.IsFalse(ProjectDiagnostics.ExactRuntimeValueEquals(new JValue("1"), new JValue(1)));
+            Assert.IsTrue(ProjectDiagnostics.ExactRuntimeValueEquals(
+                JObject.Parse("{\"position\":{\"x\":1.0,\"y\":2},\"values\":[3.0,false]}"),
+                JObject.Parse("{\"position\":{\"x\":1,\"y\":2.0},\"values\":[3,false]}")));
+            Assert.IsFalse(ProjectDiagnostics.ExactRuntimeValueEquals(
+                JObject.Parse("{\"position\":{\"x\":1,\"y\":2}}"),
+                JObject.Parse("{\"position\":{\"x\":1,\"y\":3}}")));
+        }
+
+        [Test]
         public void PackageScriptReaderResolvesInstalledPackage()
         {
             bool old = BridgePreferences.AllowPackageScripts;
