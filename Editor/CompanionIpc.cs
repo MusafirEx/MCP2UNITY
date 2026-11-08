@@ -223,14 +223,20 @@ namespace WasimDevelopment.UnityMcpBridge
         private static void RecoverInterruptedRequests()
         {
             EnsureDirectories();
+            RecoverInterruptedRequestsInDirectories(ProcessingPath, ResponsesPath);
+        }
+
+        // Test the recovery policy against isolated paths without touching live IPC queues.
+        internal static void RecoverInterruptedRequestsInDirectories(string processingPath, string responsesPath)
+        {
             string[] files;
-            try { files = Directory.GetFiles(ProcessingPath, "*.json"); }
+            try { files = Directory.GetFiles(processingPath, "*.json"); }
             catch { return; }
             foreach (string file in files)
             {
                 try
                 {
-                    string response = Path.Combine(ResponsesPath, Path.GetFileName(file));
+                    string response = Path.Combine(responsesPath, Path.GetFileName(file));
                     if (!File.Exists(response))
                     {
                         // A reload may have interrupted a side effect. Never replay an uncertain operation.

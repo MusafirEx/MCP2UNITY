@@ -165,6 +165,85 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
+        public void ScriptApprovalRejectsStaleContentWithoutOverwritingExternalEdit()
+        {
+            // Fixture-only file: do not import or refresh it, and delete it after testing.
+            bool previousPermission = BridgePreferences.EnableScriptChangeProposals;
+            string assetPath = _folder + "/StaleApprovalProbe.cs";
+            string fullPath = ProjectSecurity.ResolveAssetFile(assetPath, true);
+            const string original = "// temporary stale approval fixture";
+            const string externalEdit = "// externally changed since proposal";
+            try
+            {
+                BridgePreferences.EnableScriptChangeProposals = true;
+                File.WriteAllText(fullPath, original);
+                string originalSha = ScriptChangeManager.ComputeFileSha256(assetPath);
+                JObject proposal = ScriptChangeManager.CreateTextPatchProposal(
+                    assetPath, originalSha, "temporary", "proposed", "Stale approval regression fixture");
+                Assert.AreEqual("Pending", (string)proposal["status"]);
+
+                File.WriteAllText(fullPath, externalEdit);
+                Assert.IsFalse(ScriptChangeManager.Approve((string)proposal["id"], out string message));
+                StringAssert.Contains("changed after the proposal", message);
+                Assert.AreEqual(externalEdit, File.ReadAllText(fullPath),
+                    "Rejected stale approvals must preserve external edits.");
+                ScriptChangeProposal stored = ScriptChangeManager.Snapshot()
+                    .Single(p => p.Id == (string)proposal["id"]);
+                Assert.AreEqual("Failed", stored.Status);
+            }
+            finally
+            {
+                if (File.Exists(fullPath)) File.Delete(fullPath);
+                BridgePreferences.EnableScriptChangeProposals = previousPermission;
+            }
+        }
+
+        [Test]
+        public void InterruptedIpcRecoveryReturnsExplicitErrorWithoutReplayingRequest()
+        {
+            // Isolated Library paths: never mutate the production IPC queue.
+            string root = Path.Combine(ProjectSecurity.ProjectRoot, "Library", "WasimUnityMcpBridge",
+                "Tests", "IpcRecovery_" + Guid.NewGuid().ToString("N"));
+            string processing = Path.Combine(root, "Processing");
+            string responses = Path.Combine(root, "Responses");
+            const string interrupted = "interrupted-fixture";
+            const string completed = "already-completed-fixture";
+            try
+            {
+                Directory.CreateDirectory(processing);
+                Directory.CreateDirectory(responses);
+                File.WriteAllText(Path.Combine(processing, interrupted + ".json"), "{}");
+                File.WriteAllText(Path.Combine(processing, completed + ".json"), "{}");
+                string priorResponse = new JObject
+                {
+                    ["id"] = completed,
+                    ["success"] = true,
+                    ["result"] = new JObject()
+                }.ToString(Newtonsoft.Json.Formatting.None);
+                File.WriteAllText(Path.Combine(responses, completed + ".json"), priorResponse);
+
+                CompanionIpc.RecoverInterruptedRequestsInDirectories(processing, responses);
+
+                Assert.IsFalse(File.Exists(Path.Combine(processing, interrupted + ".json")));
+                Assert.IsFalse(File.Exists(Path.Combine(processing, completed + ".json")));
+                JObject result = JObject.Parse(File.ReadAllText(Path.Combine(responses, interrupted + ".json")));
+                Assert.AreEqual(interrupted, (string)result["id"]);
+                Assert.IsFalse(result["success"].Value<bool>());
+                StringAssert.Contains("Unity reloaded during this request", (string)result["error"]);
+                Assert.AreEqual(priorResponse, File.ReadAllText(Path.Combine(responses, completed + ".json")));
+
+                // Repeating recovery must not rewrite or replay completed requests.
+                CompanionIpc.RecoverInterruptedRequestsInDirectories(processing, responses);
+                Assert.AreEqual(priorResponse, File.ReadAllText(Path.Combine(responses, completed + ".json")));
+                Assert.AreEqual(0, Directory.GetFiles(processing, "*.json").Length);
+            }
+            finally
+            {
+                if (Directory.Exists(root)) Directory.Delete(root, true);
+            }
+        }
+
+        [Test]
         public void ReadScriptReturnsSourceTextAndSha256OverMcpToolPath()
         {
             bool old = BridgePreferences.AllowPackageScripts;
