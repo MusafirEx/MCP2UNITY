@@ -518,7 +518,13 @@ namespace WasimDevelopment.UnityMcpBridge
                 for (int i = 0; i < SceneManager.sceneCount; i++)
                 {
                     Scene scene = SceneManager.GetSceneAt(i);
-                    if (scene.isDirty || string.IsNullOrEmpty(scene.path)) throw new InvalidOperationException("Save all scenes before rollback.");
+                    // A pristine, empty, untitled scene may be owned by Unity Test
+                    // Runner. It contains no user work and does not need saving.
+                    // Never bypass the guard for dirty or non-empty untitled scenes.
+                    if (scene.isDirty || (string.IsNullOrEmpty(scene.path) && scene.rootCount != 0))
+                        throw new InvalidOperationException("Save all scenes before rollback. Blocking scene: "
+                            + (string.IsNullOrEmpty(scene.path) ? "<untitled>" : scene.path)
+                            + " (dirty=" + scene.isDirty + ", rootCount=" + scene.rootCount + ").");
                 }
         }
         private static void ApplyRollback(JObject rollback)
