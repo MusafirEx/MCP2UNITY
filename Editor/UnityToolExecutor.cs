@@ -225,6 +225,10 @@ namespace WasimDevelopment.UnityMcpBridge
             };
         }
 
+        // Do not use a top-level "content" field inside the serialized script result.
+        // MCP tool-call responses already use "content" for their native content blocks;
+        // a nested result property with that name was observed to arrive as an empty
+        // object through the ChatGPT connector. "sourceText" avoids that collision.
         private static JObject ReadScript(JObject args)
         {
             string path = ReadString(args, "path", string.Empty);
@@ -241,7 +245,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     ["path"] = ProjectSecurity.ToProjectRelative(fullPath),
                     ["lineCount"] = 0,
                     ["sha256"] = ScriptChangeManager.ComputeFileSha256(ProjectSecurity.ToProjectRelative(fullPath)),
-                    ["content"] = string.Empty
+                    ["sourceText"] = string.Empty
                 };
             }
 
@@ -261,7 +265,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 ["endLine"] = endLine,
                 ["truncated"] = endLine < lines.Length,
                 ["sha256"] = ScriptChangeManager.ComputeFileSha256(ProjectSecurity.ToProjectRelative(fullPath)),
-                ["content"] = numbered.ToString()
+                ["sourceText"] = numbered.ToString()
             };
         }
 

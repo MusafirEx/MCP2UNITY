@@ -81,3 +81,7 @@ Profiler data is sampled every 100 ms from supported Editor counters: main-threa
 ## Diagnostics limits
 
 VRChat diagnostics validate available local configuration, not network authority across real clients. Network ID allocation/conflict validation and the final world build remain in the SDK. Asset references are direct AssetDatabase dependencies; use paging for a full reverse scan and unity_find_script_references for textual code symbols. These are not a complete semantic C# graph.
+
+## Source-text response field (read-script interoperability fix)
+
+`unity_read_script` and `unity_get_selected_script` both return `path`, `lineCount`, `startLine`, `endLine`, `truncated`, `sha256` and **`sourceText`** (line-numbered C# text). The former `content` field was renamed to `sourceText` because some MCP connectors normalized nested `content` keys as MCP content blocks and delivered an empty object. Both tools use the same internal reader and path-security checks. Update any consumer previously reading `result.content` to read `result.sourceText` instead. This fix has editor regression tests; an end-to-end check through the connected ChatGPT MCP tool after upgrading UPM is still required.

@@ -28,12 +28,12 @@ namespace WasimDevelopment.UnityMcpBridge
                         Prop("symbol", StringSchema("Symbol or text to find.")),
                         Prop("caseSensitive", BooleanSchema("Use case-sensitive matching.", true)),
                         Prop("maximumResults", IntegerSchema("Maximum matches, from 1 to 200.", 80, 1, 200))), "symbol")),
-                ReadTool("unity_read_script", "Read a bounded C# script using a project-relative Assets/ or permitted Packages/ path. The response includes a SHA-256 hash for safe change proposals.",
+                ReadTool("unity_read_script", "Read a bounded C# script using a project-relative Assets/ or permitted Packages/ path. Returns sourceText (line-numbered), SHA-256, path and line range for safe change proposals.",
                     Required(ObjectSchema(
                         Prop("path", StringSchema("Project-relative script path, for example Assets/Scripts/Player.cs.")),
                         Prop("startLine", IntegerSchema("First line, one-based.", 1, 1, 1000000)),
                         Prop("endLine", IntegerSchema("Last line, one-based. Omit or use 0 for up to 400 lines.", 0, 0, 1000000))), "path")),
-                ReadTool("unity_get_selected_script", "Read the C# script currently selected in the Unity Project window.", ObjectSchema()),
+                ReadTool("unity_get_selected_script", "Read the selected C# MonoScript in the Unity Project window; returns sourceText, SHA-256 and path.", ObjectSchema()),
                 ReadTool("unity_get_active_scene", "Read active-scene metadata and a bounded hierarchy snapshot.",
                     ObjectSchema(
                         Prop("maximumObjects", IntegerSchema("Maximum hierarchy objects, from 1 to 1000.", 300, 1, 1000)),
