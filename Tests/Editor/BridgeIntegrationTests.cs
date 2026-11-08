@@ -103,6 +103,96 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             Assert.IsFalse(restored.GetComponent<Rigidbody>().isKinematic);
         }
 
+
+        [Test]
+        public void TransformToolProposesAndAppliesLocalPositionEulerRotationAndScale()
+        {
+            JObject catalog = McpToolCatalog.Build().OfType<JObject>()
+                .Single(t => (string)t["name"] == "unity_set_transform");
+            Assert.IsFalse(catalog["annotations"]["readOnlyHint"].Value<bool>());
+            JObject proposal = (JObject)UnityToolExecutor.Execute("unity_set_transform", new JObject
+            {
+                ["objectId"] = ObjectAccess.Id(_root),
+                ["position"] = new JObject { ["x"] = 1, ["y"] = 2, ["z"] = 3 },
+                ["rotation"] = new JObject { ["x"] = 0, ["y"] = 90, ["z"] = 0 },
+                ["scale"] = new JObject { ["x"] = 2, ["y"] = 3, ["z"] = 4 }
+            });
+            _proposals.Add((string)proposal["id"]);
+            Assert.AreEqual("Pending", (string)proposal["status"]);
+            JObject pending = ChangeSets.List(false, true).OfType<JObject>()
+                .Single(p => (string)p["id"] == (string)proposal["id"]);
+            JArray operations = (JArray)pending["operations"];
+            CollectionAssert.AreEqual(
+                new[] { "m_LocalPosition", "m_LocalRotation", "m_LocalScale" },
+                operations.Select(op => (string)op["propertyPath"]).ToArray());
+            Assert.AreEqual(Vector3.zero, _root.transform.localPosition,
+                "Proposing must never modify the scene.");
+            ChangeSets.Approve((string)proposal["id"]);
+            Assert.Less(Vector3.Distance(new Vector3(1, 2, 3), _root.transform.localPosition), 1e-4f);
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0, 90, 0), _root.transform.localRotation), 1e-3f);
+            Assert.Less(Vector3.Distance(new Vector3(2, 3, 4), _root.transform.localScale), 1e-4f);
+        }
+
+        [Test]
+        public void TransformToolConvertsWorldCoordinatesAndRelativeScaleUnderUniformParent()
+        {
+            _root.transform.position = new Vector3(5, 1, -2);
+            _root.transform.rotation = Quaternion.Euler(0, 30, 0);
+            _root.transform.localScale = new Vector3(2, 2, 2);
+            GameObject child = new GameObject("TransformChild");
+            SceneManager.MoveGameObjectToScene(child, _root.scene);
+            child.transform.SetParent(_root.transform, false);
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+
+            JObject absolute = (JObject)ExtendedTools.Execute("unity_set_transform", new JObject
+            {
+                ["objectId"] = ObjectAccess.Id(child),
+                ["space"] = "world",
+                ["position"] = new JObject { ["x"] = 10, ["y"] = 4, ["z"] = 3 },
+                ["rotation"] = new JObject { ["x"] = 0, ["y"] = 90, ["z"] = 0 },
+                ["scale"] = new JObject { ["x"] = 3, ["y"] = 3, ["z"] = 3 }
+            });
+            _proposals.Add((string)absolute["id"]);
+            ChangeSets.Approve((string)absolute["id"]);
+            Assert.Less(Vector3.Distance(new Vector3(10, 4, 3), child.transform.position), 1e-3f);
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0, 90, 0), child.transform.rotation), 1e-3f);
+            Assert.Less(Vector3.Distance(new Vector3(3, 3, 3), child.transform.lossyScale), 1e-3f);
+
+            JObject relative = (JObject)ExtendedTools.Execute("unity_set_transform", new JObject
+            {
+                ["objectId"] = ObjectAccess.Id(child),
+                ["space"] = "world",
+                ["relative"] = true,
+                ["position"] = new JObject { ["x"] = 1, ["y"] = 0, ["z"] = -2 },
+                ["rotation"] = new JObject { ["x"] = 0, ["y"] = 45, ["z"] = 0 },
+                ["scale"] = new JObject { ["x"] = 2, ["y"] = 1, ["z"] = 1 }
+            });
+            _proposals.Add((string)relative["id"]);
+            ChangeSets.Approve((string)relative["id"]);
+            Assert.Less(Vector3.Distance(new Vector3(11, 4, 1), child.transform.position), 1e-3f);
+            Assert.Less(Quaternion.Angle(Quaternion.Euler(0, 135, 0), child.transform.rotation), 1e-3f);
+            Assert.Less(Vector3.Distance(new Vector3(6, 3, 3), child.transform.lossyScale), 1e-3f);
+        }
+
+        [Test]
+        public void TransformToolRejectsUnsafeWorldScaleWithoutChangingScene()
+        {
+            _root.transform.localScale = new Vector3(2, 1, 1);
+            GameObject child = new GameObject("NonuniformChild");
+            SceneManager.MoveGameObjectToScene(child, _root.scene);
+            child.transform.SetParent(_root.transform, false);
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            Assert.Throws<InvalidOperationException>(() => ExtendedTools.Execute("unity_set_transform", new JObject
+            {
+                ["objectId"] = ObjectAccess.Id(child),
+                ["space"] = "world",
+                ["scale"] = new JObject { ["x"] = 3, ["y"] = 3, ["z"] = 3 }
+            }));
+            Assert.Less(Vector3.Distance(Vector3.one, child.transform.localScale), 1e-6f);
+        }
+
         [Test]
         public void ASceneChangedAfterProposalBlocksApply()
         {

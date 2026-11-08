@@ -18,6 +18,9 @@ namespace WasimDevelopment.UnityMcpBridge
                         P("targetId", Str()), P("alias", Str()), P("propertyPath", Str()), P("value", Any()), P("expectedValue", Any()),
                         P("componentType", Str()), P("name", Str()), P("primitive", Enum("Cube", "Sphere", "Capsule", "Cylinder", "Plane", "Quad")),
                         P("parentId", Str()), P("scenePath", Str()), P("path", Str()), P("expectedSha256", Str()), P("newContent", Str())), "kind") })), "summary", "operations"), false));
+            tools.Add(Tool("unity_set_transform", "Prepare a locally approved Transform change set for a scene GameObject. Position and Euler rotation support local or world coordinates, absolute or relative values. Scale uses multipliers in relative mode; world scale requires uniformly positive-scaled ancestors. No changes occur until approved in Unity.",
+                Schema(OptId(), P("position", Vec3()), P("rotation", Vec3()), P("scale", Vec3()),
+                    P("space", Enum("local", "world")), P("relative", Bool(false)), P("summary", Str())), false));
             tools.Add(Tool("unity_get_change_sets", "List pending/recent change sets and rollback state. includeOperations includes full review content.",
                 Schema(P("includeCompleted", Bool(false)), P("includeOperations", Bool(false)))));
             tools.Add(Tool("unity_propose_change_set_rollback", "Prepare a reviewed rollback of an applied change set. Blocks if assets changed after apply; approval remains in Unity.",
@@ -60,6 +63,8 @@ namespace WasimDevelopment.UnityMcpBridge
         private static JObject Bool(bool fallback) => new JObject { ["type"] = "boolean", ["default"] = fallback };
         private static JObject Int(int fallback, int min, int max) => new JObject { ["type"] = "integer", ["default"] = fallback, ["minimum"] = min, ["maximum"] = max };
         private static JObject Enum(params string[] values) => new JObject { ["type"] = "string", ["enum"] = new JArray(values) };
+        private static JObject Vec3() => Required(Schema(P("x", Number()), P("y", Number()), P("z", Number())), "x", "y", "z");
+        private static JObject Number() => new JObject { ["type"] = "number" };
         private static JObject Strings(int maximum) => new JObject { ["type"] = "array", ["items"] = Str(), ["maxItems"] = maximum };
         private static JObject Any() => new JObject();
     }

@@ -85,3 +85,36 @@ VRChat diagnostics validate available local configuration, not network authority
 ## Source-text response field (read-script interoperability fix)
 
 `unity_read_script` and `unity_get_selected_script` both return `path`, `lineCount`, `startLine`, `endLine`, `truncated`, `sha256` and **`sourceText`** (line-numbered C# text). The former `content` field was renamed to `sourceText` because some MCP connectors normalized nested `content` keys as MCP content blocks and delivered an empty object. Both tools use the same internal reader and path-security checks. Update any consumer previously reading `result.content` to read `result.sourceText` instead. This fix has editor regression tests; an end-to-end check through the connected ChatGPT MCP tool after upgrading UPM is still required.
+
+## Transform tool (MCP2UNITY extension)
+
+`unity_set_transform` creates a reviewed change set for the selected scene GameObject or a provided
+`objectId`. It is **not an immediate scene-edit command**; enable reviewed change sets in Unity,
+save the scene, send the proposal, then approve it locally. The tool supports:
+
+- `position`: XYZ position; local or world; absolute or relative translation.
+- `rotation`: XYZ **Euler angles in degrees**; local or world; absolute or relative rotation.
+  Relative local rotation is post-multiplied; relative world rotation is pre-multiplied.
+- `scale`: XYZ local scale or world scale; in `relative=true` mode, XYZ values are **multipliers**
+  (for example, `{x:2,y:1,z:1}` doubles X).
+- `space`: `local` (default) or `world`; `relative`: `false` (default) or `true`.
+- `summary` is optional. `objectId` may be omitted when a scene GameObject is selected.
+
+World scale is exact only when **all ancestors have positive uniform scales**; other hierarchies
+are rejected (use `space=local`). At least one of position, rotation or scale is required.
+Values must be finite. Saved scene / stable GlobalObjectId / stale-scene checks, local approval,
+Undo and guarded rollback are inherited from `unity_propose_change_set`.
+
+Example MCP arguments (position world absolute + Euler rotation + world scale):
+
+~~~json
+{
+  "objectId": "<saved GameObject GlobalObjectId>",
+  "space": "world",
+  "relative": false,
+  "position": {"x": 1, "y": 2, "z": 3},
+  "rotation": {"x": 0, "y": 90, "z": 0},
+  "scale": {"x": 2, "y": 2, "z": 2},
+  "summary": "Place the selected object at the target transform"
+}
+~~~
