@@ -165,6 +165,58 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
+        public void ReadScriptReturnsSourceTextAndSha256OverMcpToolPath()
+        {
+            bool old = BridgePreferences.AllowPackageScripts;
+            try
+            {
+                BridgePreferences.AllowPackageScripts = true;
+                JObject result = UnityToolExecutor.Execute("unity_read_script", new JObject
+                {
+                    ["path"] = "Packages/com.musafirex.mcp2unity/Editor/BridgeVersion.cs",
+                    ["startLine"] = 1,
+                    ["endLine"] = 8
+                }) as JObject;
+                Assert.NotNull(result);
+                Assert.IsNull(result.Property("content"), "Avoid the reserved MCP content field in serialized tool results.");
+                StringAssert.StartsWith("Packages/com.musafirex.mcp2unity/", (string)result["path"]);
+                StringAssert.Contains("BridgeVersion", (string)result["sourceText"]);
+                StringAssert.Contains("1: ", (string)result["sourceText"]);
+                Assert.Greater(result["lineCount"].Value<int>(), 0);
+                Assert.AreEqual(1, result["startLine"].Value<int>());
+                Assert.AreEqual(64, ((string)result["sha256"]).Length);
+            }
+            finally { BridgePreferences.AllowPackageScripts = old; }
+        }
+
+        [Test]
+        public void SelectedScriptReturnsSameSourceTextAndSha256()
+        {
+            bool oldPermission = BridgePreferences.AllowPackageScripts;
+            UnityEngine.Object oldSelection = Selection.activeObject;
+            try
+            {
+                BridgePreferences.AllowPackageScripts = true;
+                MonoScript selected = AssetDatabase.LoadAssetAtPath<MonoScript>(
+                    "Packages/com.musafirex.mcp2unity/Editor/BridgeVersion.cs");
+                Assert.NotNull(selected);
+                Selection.activeObject = selected;
+                JObject result = UnityToolExecutor.Execute("unity_get_selected_script", new JObject()) as JObject;
+                Assert.NotNull(result);
+                Assert.IsNull(result.Property("content"));
+                Assert.AreEqual("Packages/com.musafirex.mcp2unity/Editor/BridgeVersion.cs",
+                    (string)result["path"]);
+                StringAssert.Contains("BridgeVersion", (string)result["sourceText"]);
+                Assert.AreEqual(64, ((string)result["sha256"]).Length);
+            }
+            finally
+            {
+                Selection.activeObject = oldSelection;
+                BridgePreferences.AllowPackageScripts = oldPermission;
+            }
+        }
+
+        [Test]
         public void PackageScriptReaderResolvesInstalledPackage()
         {
             bool old = BridgePreferences.AllowPackageScripts;
