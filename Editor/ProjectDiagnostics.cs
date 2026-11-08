@@ -85,6 +85,45 @@ namespace WasimDevelopment.UnityMcpBridge
                 ["scope"] = "Direct asset dependencies under Assets; save scenes first. Source-code symbol references use unity_find_script_references." };
         }
 
+        // Exact JSON-value comparison, normalizing only numeric representation.
+        // This treats a JSON integer 1 and a Unity float 1.0 as equal, but never
+        // coerces strings, booleans, missing values, or different numeric values.
+        internal static bool ExactRuntimeValueEquals(JToken actual, JToken expected)
+        {
+            if (JToken.DeepEquals(actual, expected)) return true;
+            if (actual == null || expected == null) return false;
+
+            bool actualNumber = actual.Type == JTokenType.Integer || actual.Type == JTokenType.Float;
+            bool expectedNumber = expected.Type == JTokenType.Integer || expected.Type == JTokenType.Float;
+            if (actualNumber && expectedNumber)
+            {
+                const System.Globalization.NumberStyles style = System.Globalization.NumberStyles.Float;
+                var culture = System.Globalization.CultureInfo.InvariantCulture;
+                return decimal.TryParse(actual.ToString(Newtonsoft.Json.Formatting.None), style, culture, out decimal a)
+                    && decimal.TryParse(expected.ToString(Newtonsoft.Json.Formatting.None), style, culture, out decimal b)
+                    && a == b;
+            }
+
+            if (actual is JObject objA && expected is JObject objB)
+            {
+                if (objA.Properties().Count() != objB.Properties().Count()) return false;
+                foreach (JProperty property in objA.Properties())
+                {
+                    if (!objB.TryGetValue(property.Name, out JToken other) ||
+                        !ExactRuntimeValueEquals(property.Value, other)) return false;
+                }
+                return true;
+            }
+            if (actual is JArray arrayA && expected is JArray arrayB)
+            {
+                if (arrayA.Count != arrayB.Count) return false;
+                for (int i = 0; i < arrayA.Count; i++)
+                    if (!ExactRuntimeValueEquals(arrayA[i], arrayB[i])) return false;
+                return true;
+            }
+            return false;
+        }
+
         public static JObject RuntimeChecks(JObject args)
         {
             if (!EditorApplication.isPlaying) throw new InvalidOperationException("Runtime assertions require Play Mode.");
@@ -103,7 +142,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     actual = snapshot[property];
                     if (actual == null) throw new ArgumentException("Property is not exposed by the runtime inspector.");
                     if (check.Property("equals") == null) throw new ArgumentException("Provide an equals value.");
-                    passed = JToken.DeepEquals(actual, check["equals"]);
+                    passed = ExactRuntimeValueEquals(actual, check["equals"]);
                 }
                 catch (Exception ex) { error = ex.GetBaseException().Message; }
                 results.Add(new JObject { ["objectId"] = check["objectId"], ["property"] = check["property"],
