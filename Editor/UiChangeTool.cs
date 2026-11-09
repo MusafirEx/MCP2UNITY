@@ -17,7 +17,8 @@ namespace WasimDevelopment.UnityMcpBridge
     internal static class UiChangeTool
     {
         private static readonly HashSet<string> UiTypes = new HashSet<string>(StringComparer.Ordinal) {
-            "canvas", "panel", "image", "button", "text", "tmpText"
+            "canvas", "panel", "image", "button", "text", "tmpText",
+            "slider", "toggle", "inputField", "scrollView"
         };
 
         public static JObject ProposeCanvas(JObject args)
@@ -45,7 +46,9 @@ namespace WasimDevelopment.UnityMcpBridge
                 ["parentId"] = args["parentId"]?.DeepClone(),
                 ["alias"] = "$createdUi"
             };
-            foreach (string field in new[] { "scenePath", "text", "fontSize", "color", "width", "height", "anchoredPosition" })
+            foreach (string field in new[] { "scenePath", "text", "fontSize", "color", "width", "height", "anchoredPosition",
+                "minValue", "maxValue", "value", "wholeNumbers", "isOn", "placeholder", "characterLimit",
+                "horizontal", "vertical", "contentHeight" })
                 if (args[field] != null) op[field] = args[field].DeepClone();
             string summary = (string)args["summary"];
             if (string.IsNullOrWhiteSpace(summary))
@@ -57,7 +60,7 @@ namespace WasimDevelopment.UnityMcpBridge
         {
             string kind = (string)op["uiType"];
             if (kind == null || !UiTypes.Contains(kind))
-                throw new ArgumentException("Unsupported uGUI type. Use canvas, panel, image, button, text, tmpText.");
+                throw new ArgumentException("Unsupported uGUI type. Use canvas, panel, image, button, text, tmpText, slider, toggle, inputField, scrollView.");
             if (kind == "canvas" && op["parentId"] != null)
                 throw new ArgumentException("Canvas must be created as a scene root in this version.");
             if (kind != "canvas" && string.IsNullOrWhiteSpace((string)op["parentId"]))
@@ -79,6 +82,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     throw new ArgumentException("color must contain r, g, b, a.");
                 foreach (string axis in new[] { "r", "g", "b", "a" }) Number(color, axis, 0, 1);
             }
+            UiAdvancedTool.Validate(op);
         }
 
         private static float Number(JObject obj, string name, float min, float max)
@@ -192,7 +196,8 @@ namespace WasimDevelopment.UnityMcpBridge
                     tmp.color = ReadColor(op, Color.white);
                     break;
                 default:
-                    throw new InvalidOperationException("Unexpected UI type: " + kind);
+                    if (UiAdvancedTool.Supports(kind)) UiAdvancedTool.Apply(go, op);
+                    else throw new InvalidOperationException("Unexpected UI type: " + kind);
             }
             EditorSceneManager.MarkSceneDirty(scene);
             return go;
@@ -288,6 +293,45 @@ namespace WasimDevelopment.UnityMcpBridge
                 if (graphic != null) item["color"] = ObjectAccess.Value(graphic.color);
                 Selectable selectable = go.GetComponent<Selectable>();
                 if (selectable != null) item["interactable"] = selectable.interactable;
+                Button button = go.GetComponent<Button>();
+                if (button != null)
+                {
+                    var listeners = new JArray();
+                    for (int i = 0; i < Mathf.Min(20, button.onClick.GetPersistentEventCount()); i++)
+                        listeners.Add(new JObject {
+                            ["target"] = ObjectAccess.Reference(button.onClick.GetPersistentTarget(i)),
+                            ["method"] = button.onClick.GetPersistentMethodName(i)
+                        });
+                    item["onClickListeners"] = listeners;
+                }
+                Slider slider = go.GetComponent<Slider>();
+                if (slider != null)
+                {
+                    item["sliderMin"] = slider.minValue;
+                    item["sliderMax"] = slider.maxValue;
+                    item["sliderValue"] = slider.value;
+                    item["wholeNumbers"] = slider.wholeNumbers;
+                    item["fillRect"] = ObjectAccess.Reference(slider.fillRect);
+                    item["handleRect"] = ObjectAccess.Reference(slider.handleRect);
+                }
+                Toggle toggle = go.GetComponent<Toggle>();
+                if (toggle != null) item["isOn"] = toggle.isOn;
+                InputField input = go.GetComponent<InputField>();
+                if (input != null)
+                {
+                    item["inputText"] = Truncate(input.text);
+                    item["characterLimit"] = input.characterLimit;
+                    item["placeholder"] = input.placeholder is Text placeholderText
+                        ? Truncate(placeholderText.text) : "";
+                }
+                ScrollRect scroll = go.GetComponent<ScrollRect>();
+                if (scroll != null)
+                {
+                    item["horizontal"] = scroll.horizontal;
+                    item["vertical"] = scroll.vertical;
+                    item["viewport"] = ObjectAccess.Reference(scroll.viewport);
+                    item["content"] = ObjectAccess.Reference(scroll.content);
+                }
                 LayoutGroup layout = go.GetComponent<LayoutGroup>();
                 if (layout != null)
                 {

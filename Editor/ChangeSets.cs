@@ -19,7 +19,7 @@ namespace WasimDevelopment.UnityMcpBridge
         private static string Index => Path.Combine(Root, "index.json");
         private static JArray _records;
         private static readonly HashSet<string> Kinds = new HashSet<string> {
-            "set_property", "set_ui_layout", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab" };
+            "set_property", "set_ui_layout", "delete_gameobject", "bind_ui_button_event", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab" };
 
         private static JArray Records
         {
@@ -156,6 +156,25 @@ namespace WasimDevelopment.UnityMcpBridge
                     if (kind == "create_ui" && primitive != null) throw new ArgumentException("uGUI objects cannot be 3D primitives.");
                     if (primitive != null && (!Enum.TryParse(primitive, out PrimitiveType parsed) || !Enum.IsDefined(typeof(PrimitiveType), parsed)))
                         throw new ArgumentException("Invalid primitive type.");
+                }
+                if (kind == "delete_gameobject")
+                {
+                    Object deleteTarget = ExistingTarget((string)op["targetId"], aliases);
+                    if (!(deleteTarget is GameObject deleteGo))
+                        throw new ArgumentException("Deletion targetId must identify a saved GameObject.");
+                    AddScene(sceneGuards, deleteGo.scene);
+                    GameObjectDeleteTool.Validate(deleteGo, op);
+                }
+                if (kind == "bind_ui_button_event")
+                {
+                    Object buttonTarget = ExistingTarget((string)op["targetId"], aliases);
+                    Object eventTarget = ExistingTarget((string)op["eventTargetId"], aliases);
+                    GameObject buttonGo = ObjectAccess.GameObjectOf(buttonTarget);
+                    GameObject eventGo = ObjectAccess.GameObjectOf(eventTarget);
+                    if (buttonGo == null || eventGo == null)
+                        throw new ArgumentException("Button event requires saved scene GameObjects.");
+                    AddScene(sceneGuards, buttonGo.scene);
+                    UiButtonEventTool.Validate(buttonGo, eventGo, op);
                 }
                 if (kind == "set_ui_layout")
                 {
@@ -412,6 +431,16 @@ namespace WasimDevelopment.UnityMcpBridge
                 else if (kind == "set_ui_layout")
                 {
                     UiLayoutTool.Apply(go, op);
+                }
+                else if (kind == "delete_gameobject")
+                {
+                    if (!(target is GameObject deleteGo))
+                        throw new InvalidOperationException("Deletion target must remain a GameObject.");
+                    GameObjectDeleteTool.Apply(deleteGo, op);
+                }
+                else if (kind == "bind_ui_button_event")
+                {
+                    UiButtonEventTool.Apply(go, op);
                 }
                 else if (kind == "set_property")
                 {

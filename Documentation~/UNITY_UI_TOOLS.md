@@ -1,4 +1,4 @@
-# MCP2UNITY — Unity uGUI tools (Phase 1)
+# MCP2UNITY — Unity uGUI tools (Phases 1–3)
 
 > Target: Unity 2022.3 with com.unity.ugui 1.0.0 and com.unity.textmeshpro 3.0.7.
 > Four new tools and 19 additional EditMode tests. Live Unity and MCP compilation tests are required after updating the installed UPM package; source publication alone is not a test pass.
@@ -131,3 +131,54 @@ Example:
 
 18 Phase 2 regression tests: tool catalog, deferred proposals, legacy Text/TMP text and font editing, Image color/fill/raycast, Button interactability, invalid style input rejections, Horizontal/Vertical/Grid layout configuration, conflict and invalid-dimension rejection, layout inspection and rollback. Total expected EditMode count: 51 (33 existing + 18 Phase 2). Passing these tests does not yet establish direct newly advertised tool availability through every ChatGPT connector configuration.
 
+
+
+## Phase 3 — advanced controls and guarded actions (test candidate)
+
+The direct-connector phase 1/2 integration and 51/51 previous EditMode tests passed in Unity 2022.3.62f3. The source for Phase 3 must still be installed and compiled in Unity, and the 22 additional regressions have **not yet passed**. The target count is 73 (51 previous + 22 new).
+
+### Extended unity_create_ui
+
+The existing reviewed \`unity_create_ui\` tool additionally accepts:
+
+| uiType | Optional properties | Created hierarchy |
+|---|---|---|
+| slider | minValue, maxValue, value, wholeNumbers, color | Slider + Fill Area/Fill + Handle Slide Area/Handle, with assigned RectTransforms |
+| toggle | text, isOn, fontSize, color | Toggle + Background/Checkmark + Label |
+| inputField | text, placeholder, fontSize, characterLimit, color | Legacy InputField + Placeholder and Text children, both assigned to component |
+| scrollView | horizontal, vertical, contentHeight, color | ScrollRect + RectMask2D Viewport + Content |
+
+All numbers and inputs are validated before proposal. Defaults: slider 0..1 with 0.5 value; toggle off; inputField limit 4096, scroll view vertical only and content height 640. The ScrollView's Content can be used as a saved parentId for new UI elements after approval.
+
+Example proposal:
+
+~~~json
+{"uiType":"slider","name":"MasterVolume","parentId":"<saved Canvas GlobalObjectId>",
+ "width":300,"height":40,"minValue":0,"maxValue":1,"value":0.7}
+~~~
+
+### unity_bind_button_event (new)
+
+Creates **one reviewed persistent Button.onClick listener** with an explicit allowlist: \`action = "setActive"\`, \`value = true/false\`. The target must be a saved uGUI RectTransform in the same Canvas and scene as the source Button. Maximum 20 listeners per Button. Does not execute the listener while preparing or approving the change. No arbitrary reflection or C# method invocation is provided.
+
+~~~json
+{"buttonId":"<saved Button GameObject ID>","targetId":"<saved Panel GameObject ID>",
+ "action":"setActive","value":false}
+~~~
+
+Use an appropriate EventSystem/InputModule in the scene if the Button must respond to runtime pointer clicks. OnClick persistence still needs end-to-end PlayMode verification.
+
+### unity_delete_gameobject (new, destructive hint)
+
+Deletion is constrained by the saved scene and stable object ID, exact \`confirmedName\`, and a \`maximumObjects\` cap 1–100 for the entire hierarchy including inactive descendants. Deleting prefab instances or prefab assets directly is rejected. The proposal captures parent identity and subtree size, validates them again when applied, and requires local Unity approval.
+
+~~~json
+{"objectId":"<saved GameObject ID>","confirmedName":"TemporaryTestCanvas",
+ "maximumObjects":30,"summary":"Remove temporary integration-only UI"}
+~~~
+
+The Undo system and pre-change scene backup cover the action. Old scene-file rollbacks remain hash-guarded and **may be blocked after subsequent independent scene edits**. Do not force an old backup over unrelated work. If you are deleting important content, back up the scene and review the complete subtree first.
+
+### Phase 3 tests
+
+22 new EditMode tests target catalog/destructive permissions, four control hierarchies and configuration, invalid input rejection, ScrollView child parenting, advanced hierarchy inspection, deletion guards and rollback, and a safe Button onClick persistent listener. Existing phase 1/2 regression suites should also be rerun. These are *planned tests*, not a passing result.

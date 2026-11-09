@@ -11,15 +11,21 @@ namespace WasimDevelopment.UnityMcpBridge
                     P("includeSerialized", Bool(true)), P("udonVariables", Strings(32)))));
             tools.Add(Tool("unity_capture_view", "Return an MCP image of the Scene camera render or focused Game View. Scene capture excludes editor gizmos. Requires interactive Unity.",
                 Schema(P("view", Enum("scene", "game")), P("width", Int(960, 64, 1280)), P("height", Int(540, 64, 1280)))));
-            tools.Add(Tool("unity_propose_change_set", "Create a pending set of 1-50 operations. User must enable change sets and approve inside Unity. Saved clean scenes, stable GlobalObjectIds and existing destination folders are required. Operations: set_property, add_component, create_gameobject, create_script, replace_script, save_prefab. New aliases use $name. Existing scripts require expectedSha256. No immediate project mutation.",
+            tools.Add(Tool("unity_propose_change_set", "Create a pending set of 1-50 operations. User must enable change sets and approve inside Unity. Saved clean scenes, stable GlobalObjectIds and existing destination folders are required. Operations: set_property, set_ui_layout, add_component, create_gameobject, create_ui, delete_gameobject, bind_ui_button_event, create_script, replace_script, save_prefab. New aliases use $name. Existing scripts require expectedSha256. No immediate project mutation.",
                 Required(Schema(P("summary", Str()), P("operations", new JObject {
                     ["type"] = "array", ["minItems"] = 1, ["maxItems"] = 50,
-                    ["items"] = Required(Schema(P("kind", Enum("set_property", "set_ui_layout", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab")),
+                    ["items"] = Required(Schema(P("kind", Enum("set_property", "set_ui_layout", "delete_gameobject", "bind_ui_button_event", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab")),
                         P("targetId", Str()), P("alias", Str()), P("propertyPath", Str()), P("value", Any()), P("expectedValue", Any()),
                         P("componentType", Str()), P("name", Str()), P("primitive", Enum("Cube", "Sphere", "Capsule", "Cylinder", "Plane", "Quad")),
-                        P("parentId", Str()), P("scenePath", Str()), P("uiType", Enum("canvas", "panel", "image", "button", "text", "tmpText")),
+                        P("parentId", Str()), P("scenePath", Str()), P("uiType", Enum("canvas", "panel", "image", "button", "text", "tmpText",
+                            "slider", "toggle", "inputField", "scrollView")),
                         P("createEventSystem", Bool(true)), P("referenceResolution", Vec2()), P("text", Str()),
                         P("fontSize", Number()), P("color", Color()), P("width", Number()), P("height", Number()), P("anchoredPosition", Vec2()),
+                        P("minValue", Number()), P("maxValue", Number()), P("wholeNumbers", Bool(false)),
+                        P("isOn", Bool(false)), P("placeholder", Str()), P("characterLimit", Int(4096, 0, 4096)),
+                        P("horizontal", Bool(false)), P("vertical", Bool(true)), P("contentHeight", Number()),
+                        P("eventTargetId", Str()), P("action", Enum("setActive")),
+                        P("confirmedName", Str()), P("maximumObjects", Int(25, 1, 100)),
                         P("layoutType", Enum("horizontal", "vertical", "grid")), P("spacing", Number()), P("padding", Padding()),
                         P("cellSize", Vec2()), P("constraint", Enum("flexible", "fixedColumnCount", "fixedRowCount")),
                         P("constraintCount", Int(2, 1, 1000)), P("childControlWidth", Bool(true)), P("childControlHeight", Bool(true)),
@@ -29,10 +35,14 @@ namespace WasimDevelopment.UnityMcpBridge
                     P("space", Enum("local", "world")), P("relative", Bool(false)), P("summary", Str())), false));
             tools.Add(Tool("unity_create_canvas", "Prepare a reviewed uGUI Canvas creation with CanvasScaler, GraphicRaycaster and optional EventSystem; scene is unchanged until locally approved.",
                 Schema(P("name", Str()), P("scenePath", Str()), P("referenceResolution", Vec2()), P("createEventSystem", Bool(true)), P("summary", Str())), false));
-            tools.Add(Tool("unity_create_ui", "Prepare a reviewed RectTransform uGUI element under an existing Canvas: panel, image, button, text or tmpText. Use a saved parentId; no immediate scene edit.",
-                Required(Schema(P("uiType", Enum("panel", "image", "button", "text", "tmpText")), P("name", Str()), P("parentId", Str()),
+            tools.Add(Tool("unity_create_ui", "Prepare reviewed uGUI creation under Canvas: panel, image, button, text, tmpText, slider, toggle, inputField or scrollView. Each control has children and safe default graphics; no immediate scene edit.",
+                Required(Schema(P("uiType", Enum("panel", "image", "button", "text", "tmpText", "slider", "toggle", "inputField", "scrollView")), P("name", Str()), P("parentId", Str()),
                     P("scenePath", Str()), P("text", Str()), P("fontSize", Number()), P("color", Color()),
-                    P("width", Number()), P("height", Number()), P("anchoredPosition", Vec2()), P("summary", Str())),
+                    P("width", Number()), P("height", Number()), P("anchoredPosition", Vec2()),
+                    P("minValue", Number()), P("maxValue", Number()), P("value", Number()), P("wholeNumbers", Bool(false)),
+                    P("isOn", Bool(false)), P("placeholder", Str()), P("characterLimit", Int(4096, 0, 4096)),
+                    P("horizontal", Bool(false)), P("vertical", Bool(true)), P("contentHeight", Number()),
+                    P("summary", Str())),
                     "uiType", "name", "parentId"), false));
             tools.Add(Tool("unity_set_rect_transform", "Prepare a reviewed edit of UI anchorMin/anchorMax/pivot/sizeDelta/anchoredPosition on a saved RectTransform. Local approval and rollback are required.",
                 Schema(OptId(), P("anchorMin", Vec2()), P("anchorMax", Vec2()), P("pivot", Vec2()),
@@ -48,6 +58,13 @@ namespace WasimDevelopment.UnityMcpBridge
                     P("childControlWidth", Bool(true)), P("childControlHeight", Bool(true)),
                     P("childForceExpandWidth", Bool(false)), P("childForceExpandHeight", Bool(false)),
                     P("summary", Str())), "layoutType"), false));
+            tools.Add(Tool("unity_bind_button_event", "Prepare a locally approved Button.onClick persistent listener restricted to GameObject.SetActive(bool) on a target UI element in the same Canvas. No arbitrary code or method invocation.",
+                Required(Schema(P("buttonId", Str()), P("targetId", Str()),
+                    P("action", Enum("setActive")), P("value", Bool(true)), P("summary", Str())),
+                    "buttonId", "targetId", "action", "value"), false));
+            tools.Add(Tool("unity_delete_gameobject", "Prepare a locally approved scene GameObject deletion with exact confirmedName and bounded subtree (maximum 100 objects), Undo and scene backup. Never deletes prefab instances directly. Review before approval.",
+                Required(Schema(OptId(), P("confirmedName", Str()), P("maximumObjects", Int(25, 1, 100)),
+                    P("summary", Str())), "confirmedName"), false, true));
             tools.Add(Tool("unity_inspect_ui", "Read a bounded uGUI hierarchy: RectTransforms, components, text, color, button state and Canvas mode.",
                 Schema(OptId(), P("maximumObjects", Int(100, 1, 200)))));
             tools.Add(Tool("unity_get_change_sets", "List pending/recent change sets and rollback state. includeOperations includes full review content.",
@@ -78,10 +95,10 @@ namespace WasimDevelopment.UnityMcpBridge
             tools.Add(Tool("unity_get_test_results", "Read the latest bridge-started Unity Test Framework run and bounded failure details. Results persist across domain reloads.", Schema()));
         }
 
-        private static JObject Tool(string name, string description, JObject input, bool readOnly = true)
+        private static JObject Tool(string name, string description, JObject input, bool readOnly = true, bool destructive = false)
             => new JObject { ["name"] = name, ["title"] = name.Replace("unity_", "Unity ").Replace('_', ' '),
                 ["description"] = description, ["inputSchema"] = input, ["annotations"] = new JObject {
-                    ["readOnlyHint"] = readOnly, ["destructiveHint"] = false, ["idempotentHint"] = readOnly, ["openWorldHint"] = false } };
+                    ["readOnlyHint"] = readOnly, ["destructiveHint"] = destructive, ["idempotentHint"] = readOnly, ["openWorldHint"] = false } };
         private static JObject Schema(params JProperty[] properties) => new JObject {
             ["type"] = "object", ["properties"] = new JObject(properties), ["additionalProperties"] = false };
         private static JObject Required(JObject schema, params string[] names) { schema["required"] = new JArray(names); return schema; }

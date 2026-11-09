@@ -128,3 +128,8 @@ Four extra tools (`unity_create_canvas`, `unity_create_ui`, `unity_set_rect_tran
 ## Unity uGUI Phase 2
 
 Two new locally-reviewed tools, `unity_set_ui_property` and `unity_set_ui_layout`, extend the catalog to 45 advertised tools. Detailed types, limits, examples and test coverage: [UNITY_UI_TOOLS.md](UNITY_UI_TOOLS.md).
+
+
+## Unity uGUI Phase 3 (candidate)
+
+The existing `unity_create_ui` now supports Slider, Toggle, legacy InputField and ScrollView. Two new locally reviewed tools, `unity_bind_button_event` (allowlisted `GameObject.SetActive(bool)` to same-Canvas UI) and `unity_delete_gameobject` (exact-name, ≤100-subtree-size guarded destruction), increase the catalog to 47 tools. See [UNITY_UI_TOOLS.md](UNITY_UI_TOOLS.md) for exact constraints and review examples. 22 new EditMode tests are included; run them in Unity after updating the package. Total suite size is 73.

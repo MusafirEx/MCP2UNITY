@@ -926,5 +926,363 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 .SelectMany(x => ObjectAccess.Walk(x, 20)).Single(x => x.name == "UiPhase2Element");
             Assert.IsNull(original.GetComponent<VerticalLayoutGroup>());
         }
+
+
+        // ---- Phase 3: advanced uGUI controls, safe deletion, and Button events ----
+
+        private GameObject UiPhase3Child(string name, GameObject parent, Type componentType = null)
+        {
+            var child = new GameObject(name, typeof(RectTransform));
+            SceneManager.MoveGameObjectToScene(child, _root.scene);
+            child.transform.SetParent(parent.transform, false);
+            if (componentType != null) child.AddComponent(componentType);
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            return child;
+        }
+
+        private JObject UiPhase3Propose(string kind, string name, JObject options = null)
+        {
+            GameObject canvas = UiFixtureCanvas();
+            JObject operation = UiOp(kind, name, ObjectAccess.Id(canvas));
+            if (options != null)
+                foreach (JProperty property in options.Properties())
+                    operation[property.Name] = property.Value.DeepClone();
+            return Propose(operation);
+        }
+
+        private GameObject UiPhase3Find(string name)
+        {
+            Scene scene = SceneManager.GetSceneByPath(_scenePath);
+            return scene.GetRootGameObjects()
+                .SelectMany(x => ObjectAccess.Walk(x, 150))
+                .Single(x => x.name == name);
+        }
+
+        [Test]
+        public void UiPhase3CatalogAdvertisesAdvancedControlsAndSafeActions()
+        {
+            var tools = McpToolCatalog.Build().OfType<JObject>().ToDictionary(t => (string)t["name"]);
+            Assert.AreEqual(47, tools.Count);
+            foreach (string name in new[] { "unity_bind_button_event", "unity_delete_gameobject" })
+            {
+                Assert.IsFalse(tools[name]["annotations"]["readOnlyHint"].Value<bool>());
+            }
+            Assert.IsTrue(tools["unity_delete_gameobject"]["annotations"]["destructiveHint"].Value<bool>());
+            JArray allowed = (JArray)tools["unity_create_ui"]["inputSchema"]["properties"]["uiType"]["enum"];
+            foreach (string kind in new[] { "slider", "toggle", "inputField", "scrollView" })
+                Assert.IsTrue(allowed.Any(x => (string)x == kind), kind);
+        }
+
+        [Test]
+        public void UiSliderProposalDefersCreationAndLinksFillAndHandle()
+        {
+            JObject set = UiPhase3Propose("slider", "Phase3Slider");
+            Assert.AreEqual("Pending", (string)set["status"]);
+            Assert.IsNull(_root.scene.GetRootGameObjects()
+                .SelectMany(x => ObjectAccess.Walk(x, 100)).FirstOrDefault(x => x.name == "Phase3Slider"));
+            ChangeSets.Approve((string)set["id"]);
+            GameObject go = UiPhase3Find("Phase3Slider");
+            Slider slider = go.GetComponent<Slider>();
+            Assert.NotNull(slider);
+            Assert.NotNull(slider.fillRect);
+            Assert.NotNull(slider.handleRect);
+            Assert.NotNull(slider.targetGraphic);
+            Assert.AreEqual(0.5f, slider.value, 0.001f);
+        }
+
+        [Test]
+        public void UiSliderCustomRangeAndWholeNumbers()
+        {
+            JObject set = UiPhase3Propose("slider", "Phase3Slider", new JObject {
+                ["minValue"] = 10, ["maxValue"] = 90, ["value"] = 42, ["wholeNumbers"] = true
+            });
+            ChangeSets.Approve((string)set["id"]);
+            Slider slider = UiPhase3Find("Phase3Slider").GetComponent<Slider>();
+            Assert.IsTrue(slider.wholeNumbers);
+            Assert.AreEqual(10, slider.minValue);
+            Assert.AreEqual(90, slider.maxValue);
+            Assert.AreEqual(42, slider.value);
+        }
+
+        [Test]
+        public void UiSliderRejectsInvertedRange()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(new JObject {
+                ["kind"] = "create_ui", ["uiType"] = "slider", ["name"] = "BadSlider",
+                ["parentId"] = ObjectAccess.Id(canvas), ["minValue"] = 10, ["maxValue"] = 2
+            }));
+            Assert.IsNull(canvas.transform.Find("BadSlider"));
+        }
+
+        [Test]
+        public void UiSliderRejectsValueOutsideRange()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(new JObject {
+                ["kind"] = "create_ui", ["uiType"] = "slider", ["name"] = "BadSlider",
+                ["parentId"] = ObjectAccess.Id(canvas),
+                ["minValue"] = 0, ["maxValue"] = 1, ["value"] = 1.5
+            }));
+        }
+
+        [Test]
+        public void UiToggleCreatesBackgroundCheckmarkAndLabel()
+        {
+            JObject set = UiPhase3Propose("toggle", "Phase3Toggle", new JObject {
+                ["text"] = "Enable feature", ["isOn"] = true
+            });
+            ChangeSets.Approve((string)set["id"]);
+            GameObject go = UiPhase3Find("Phase3Toggle");
+            Toggle toggle = go.GetComponent<Toggle>();
+            Assert.NotNull(toggle);
+            Assert.IsTrue(toggle.isOn);
+            Assert.NotNull(toggle.targetGraphic);
+            Assert.NotNull(toggle.graphic);
+            Assert.AreEqual("Enable feature", go.transform.Find("Label").GetComponent<Text>().text);
+            Assert.NotNull(go.transform.Find("Background/Checkmark"));
+        }
+
+        [Test]
+        public void UiToggleRejectsNonBoolean()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(new JObject {
+                ["kind"] = "create_ui", ["uiType"] = "toggle", ["name"] = "BadToggle",
+                ["parentId"] = ObjectAccess.Id(canvas), ["isOn"] = "yes"
+            }));
+        }
+
+        [Test]
+        public void UiInputFieldCreatesPlaceholderAndWorkingTextReference()
+        {
+            JObject set = UiPhase3Propose("inputField", "Phase3Input", new JObject {
+                ["text"] = "Initial value", ["placeholder"] = "Type something...",
+                ["characterLimit"] = 30
+            });
+            ChangeSets.Approve((string)set["id"]);
+            InputField input = UiPhase3Find("Phase3Input").GetComponent<InputField>();
+            Assert.NotNull(input);
+            Assert.NotNull(input.textComponent);
+            Assert.NotNull(input.placeholder);
+            Assert.AreEqual("Initial value", input.text);
+            Assert.AreEqual(30, input.characterLimit);
+            Assert.AreEqual("Type something...", ((Text)input.placeholder).text);
+        }
+
+        [Test]
+        public void UiInputFieldRejectsExcessiveCharacterLimit()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(new JObject {
+                ["kind"] = "create_ui", ["uiType"] = "inputField", ["name"] = "BadInput",
+                ["parentId"] = ObjectAccess.Id(canvas), ["characterLimit"] = 9999
+            }));
+        }
+
+        [Test]
+        public void UiInputFieldRejectsLongPlaceholder()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(new JObject {
+                ["kind"] = "create_ui", ["uiType"] = "inputField", ["name"] = "BadInput",
+                ["parentId"] = ObjectAccess.Id(canvas), ["placeholder"] = new string('x', 513)
+            }));
+        }
+
+        [Test]
+        public void UiScrollViewCreatesViewportMaskAndContent()
+        {
+            JObject set = UiPhase3Propose("scrollView", "Phase3Scroll", new JObject {
+                ["vertical"] = true, ["horizontal"] = false, ["contentHeight"] = 720
+            });
+            ChangeSets.Approve((string)set["id"]);
+            GameObject go = UiPhase3Find("Phase3Scroll");
+            ScrollRect scroll = go.GetComponent<ScrollRect>();
+            Assert.NotNull(scroll);
+            Assert.NotNull(scroll.viewport);
+            Assert.NotNull(scroll.content);
+            Assert.NotNull(scroll.viewport.GetComponent<RectMask2D>());
+            Assert.AreEqual(720, scroll.content.sizeDelta.y, 0.001f);
+            Assert.IsTrue(scroll.vertical);
+            Assert.IsFalse(scroll.horizontal);
+            Assert.AreEqual("Viewport", scroll.viewport.name);
+            Assert.AreEqual("Content", scroll.content.name);
+        }
+
+        [Test]
+        public void UiScrollViewCanCreateChildUnderSavedContent()
+        {
+            JObject set = UiPhase3Propose("scrollView", "Phase3Scroll");
+            ChangeSets.Approve((string)set["id"]);
+            GameObject content = UiPhase3Find("Phase3Scroll").transform.Find("Viewport/Content").gameObject;
+            JObject child = Propose(UiOp("text", "ScrollItem", ObjectAccess.Id(content)));
+            ChangeSets.Approve((string)child["id"]);
+            Assert.AreEqual("ScrollItem", content.transform.GetChild(0).name);
+        }
+
+        [Test]
+        public void UiScrollViewRejectsBothDirectionsDisabled()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(new JObject {
+                ["kind"] = "create_ui", ["uiType"] = "scrollView", ["name"] = "BadScroll",
+                ["parentId"] = ObjectAccess.Id(canvas),
+                ["vertical"] = false, ["horizontal"] = false
+            }));
+        }
+
+        [Test]
+        public void UiInspectReportsAdvancedControlSettings()
+        {
+            JObject set = UiPhase3Propose("slider", "Phase3Slider", new JObject {
+                ["value"] = .8, ["minValue"] = 0, ["maxValue"] = 1
+            });
+            ChangeSets.Approve((string)set["id"]);
+            JObject view = (JObject)ExtendedTools.Execute("unity_inspect_ui",
+                new JObject { ["objectId"] = ObjectAccess.Id(UiPhase3Find("Phase3Slider")) });
+            JObject node = (JObject)((JArray)view["nodes"])[0];
+            Assert.AreEqual(.8f, node["sliderValue"].Value<float>(), .001f);
+            Assert.NotNull(node["fillRect"]);
+            Assert.NotNull(node["handleRect"]);
+        }
+
+        [Test]
+        public void UiDeleteRequiresExactName()
+        {
+            var go = new GameObject("DoNotDelete");
+            SceneManager.MoveGameObjectToScene(go, _root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_delete_gameobject",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["confirmedName"] = "Different" }));
+            Assert.NotNull(UiPhase3Find("DoNotDelete"));
+        }
+
+        [Test]
+        public void UiDeleteRejectsSubtreeBeyondLimit()
+        {
+            var go = new GameObject("LargeTree");
+            SceneManager.MoveGameObjectToScene(go, _root.scene);
+            for (int i = 0; i < 3; i++)
+            {
+                var node = new GameObject("Node" + i);
+                SceneManager.MoveGameObjectToScene(node, _root.scene);
+                node.transform.SetParent(go.transform);
+            }
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_delete_gameobject",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["confirmedName"] = go.name, ["maximumObjects"] = 2 }));
+            Assert.NotNull(UiPhase3Find("LargeTree"));
+        }
+
+        [Test]
+        public void UiDeleteOnlyRemovesTargetAfterApproval()
+        {
+            var go = new GameObject("TemporaryObject");
+            SceneManager.MoveGameObjectToScene(go, _root.scene);
+            var childObject = new GameObject("TemporaryChild");
+            SceneManager.MoveGameObjectToScene(childObject, _root.scene);
+            childObject.transform.SetParent(go.transform);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            JObject set = (JObject)ExtendedTools.Execute("unity_delete_gameobject",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["confirmedName"] = "TemporaryObject", ["maximumObjects"] = 3 });
+            _proposals.Add((string)set["id"]);
+            Assert.NotNull(UiPhase3Find("TemporaryObject"));
+            ChangeSets.Approve((string)set["id"]);
+            Assert.IsNull(_root.scene.GetRootGameObjects()
+                .FirstOrDefault(x => x.name == "TemporaryObject"));
+            Assert.AreEqual("BridgeTestRoot", _root.name);
+        }
+
+        [Test]
+        public void UiDeleteGuardedRollbackRestoresTarget()
+        {
+            var go = new GameObject("TemporaryObject");
+            SceneManager.MoveGameObjectToScene(go, _root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            JObject set = (JObject)ExtendedTools.Execute("unity_delete_gameobject",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["confirmedName"] = "TemporaryObject", ["maximumObjects"] = 2 });
+            _proposals.Add((string)set["id"]);
+            ChangeSets.Approve((string)set["id"]);
+            Scene scene = SceneManager.GetSceneByPath(_scenePath);
+            if (scene.isDirty) Assert.IsTrue(EditorSceneManager.SaveScene(scene));
+            JObject rollback = ChangeSets.ProposeRollback((string)set["id"], "Test delete rollback");
+            _proposals.Add((string)rollback["id"]);
+            ChangeSets.Approve((string)rollback["id"]);
+            Scene loaded = SceneManager.GetSceneByPath(_scenePath);
+            Assert.NotNull(loaded.GetRootGameObjects()
+                .FirstOrDefault(x => x.name == "TemporaryObject"));
+        }
+
+        private GameObject[] UiPhase3ButtonFixture()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            GameObject button = UiPhase3Child("EventButton", canvas, typeof(Button));
+            GameObject target = UiPhase3Child("EventTarget", canvas, typeof(Image));
+            return new[] { button, target };
+        }
+
+        [Test]
+        public void UiButtonEventIsDeferredUntilReviewAndBindsSetActive()
+        {
+            GameObject[] objects = UiPhase3ButtonFixture();
+            Button button = objects[0].GetComponent<Button>();
+            Assert.AreEqual(0, button.onClick.GetPersistentEventCount());
+            JObject set = (JObject)ExtendedTools.Execute("unity_bind_button_event", new JObject {
+                ["buttonId"] = ObjectAccess.Id(objects[0]),
+                ["targetId"] = ObjectAccess.Id(objects[1]),
+                ["action"] = "setActive", ["value"] = false
+            });
+            _proposals.Add((string)set["id"]);
+            Assert.AreEqual("Pending", (string)set["status"]);
+            Assert.AreEqual(0, button.onClick.GetPersistentEventCount());
+            ChangeSets.Approve((string)set["id"]);
+            Assert.AreEqual(1, button.onClick.GetPersistentEventCount());
+            Assert.AreEqual("SetActive", button.onClick.GetPersistentMethodName(0));
+            Assert.AreSame(objects[1], button.onClick.GetPersistentTarget(0));
+            Assert.IsTrue(objects[1].activeSelf);
+        }
+
+        [Test]
+        public void UiButtonEventRejectsArbitraryMethod()
+        {
+            GameObject[] objects = UiPhase3ButtonFixture();
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_bind_button_event",
+                new JObject { ["buttonId"] = ObjectAccess.Id(objects[0]),
+                    ["targetId"] = ObjectAccess.Id(objects[1]),
+                    ["action"] = "InvokeAnything", ["value"] = true }));
+        }
+
+        [Test]
+        public void UiButtonEventRejectsNonUiTarget()
+        {
+            GameObject[] objects = UiPhase3ButtonFixture();
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_bind_button_event",
+                new JObject { ["buttonId"] = ObjectAccess.Id(objects[0]),
+                    ["targetId"] = ObjectAccess.Id(_root),
+                    ["action"] = "setActive", ["value"] = false }));
+        }
+
+        [Test]
+        public void UiButtonEventInspectShowsPersistentListener()
+        {
+            GameObject[] objects = UiPhase3ButtonFixture();
+            JObject set = (JObject)ExtendedTools.Execute("unity_bind_button_event", new JObject {
+                ["buttonId"] = ObjectAccess.Id(objects[0]), ["targetId"] = ObjectAccess.Id(objects[1]),
+                ["action"] = "setActive", ["value"] = false
+            });
+            _proposals.Add((string)set["id"]);
+            ChangeSets.Approve((string)set["id"]);
+            JObject details = (JObject)ExtendedTools.Execute("unity_inspect_ui",
+                new JObject { ["objectId"] = ObjectAccess.Id(objects[0]) });
+            JArray listeners = (JArray)((JArray)details["nodes"])[0]["onClickListeners"];
+            Assert.AreEqual(1, listeners.Count);
+            Assert.AreEqual("SetActive", (string)listeners[0]["method"]);
+        }
     }
 }
