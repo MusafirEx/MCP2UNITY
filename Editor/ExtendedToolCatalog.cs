@@ -14,12 +14,16 @@ namespace WasimDevelopment.UnityMcpBridge
             tools.Add(Tool("unity_propose_change_set", "Create a pending set of 1-50 operations. User must enable change sets and approve inside Unity. Saved clean scenes, stable GlobalObjectIds and existing destination folders are required. Operations: set_property, add_component, create_gameobject, create_script, replace_script, save_prefab. New aliases use $name. Existing scripts require expectedSha256. No immediate project mutation.",
                 Required(Schema(P("summary", Str()), P("operations", new JObject {
                     ["type"] = "array", ["minItems"] = 1, ["maxItems"] = 50,
-                    ["items"] = Required(Schema(P("kind", Enum("set_property", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab")),
+                    ["items"] = Required(Schema(P("kind", Enum("set_property", "set_ui_layout", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab")),
                         P("targetId", Str()), P("alias", Str()), P("propertyPath", Str()), P("value", Any()), P("expectedValue", Any()),
                         P("componentType", Str()), P("name", Str()), P("primitive", Enum("Cube", "Sphere", "Capsule", "Cylinder", "Plane", "Quad")),
                         P("parentId", Str()), P("scenePath", Str()), P("uiType", Enum("canvas", "panel", "image", "button", "text", "tmpText")),
                         P("createEventSystem", Bool(true)), P("referenceResolution", Vec2()), P("text", Str()),
-                        P("fontSize", Number()), P("color", Color()), P("width", Number()), P("height", Number()), P("anchoredPosition", Vec2()), P("path", Str()), P("expectedSha256", Str()), P("newContent", Str())), "kind") })), "summary", "operations"), false));
+                        P("fontSize", Number()), P("color", Color()), P("width", Number()), P("height", Number()), P("anchoredPosition", Vec2()),
+                        P("layoutType", Enum("horizontal", "vertical", "grid")), P("spacing", Number()), P("padding", Padding()),
+                        P("cellSize", Vec2()), P("constraint", Enum("flexible", "fixedColumnCount", "fixedRowCount")),
+                        P("constraintCount", Int(2, 1, 1000)), P("childControlWidth", Bool(true)), P("childControlHeight", Bool(true)),
+                        P("childForceExpandWidth", Bool(false)), P("childForceExpandHeight", Bool(false)), P("path", Str()), P("expectedSha256", Str()), P("newContent", Str())), "kind") })), "summary", "operations"), false));
             tools.Add(Tool("unity_set_transform", "Prepare a locally approved Transform change set for a scene GameObject. Position and Euler rotation support local or world coordinates, absolute or relative values. Scale uses multipliers in relative mode; world scale requires uniformly positive-scaled ancestors. No changes occur until approved in Unity.",
                 Schema(OptId(), P("position", Vec3()), P("rotation", Vec3()), P("scale", Vec3()),
                     P("space", Enum("local", "world")), P("relative", Bool(false)), P("summary", Str())), false));
@@ -33,6 +37,17 @@ namespace WasimDevelopment.UnityMcpBridge
             tools.Add(Tool("unity_set_rect_transform", "Prepare a reviewed edit of UI anchorMin/anchorMax/pivot/sizeDelta/anchoredPosition on a saved RectTransform. Local approval and rollback are required.",
                 Schema(OptId(), P("anchorMin", Vec2()), P("anchorMax", Vec2()), P("pivot", Vec2()),
                     P("sizeDelta", Vec2()), P("anchoredPosition", Vec2()), P("summary", Str())), false));
+            tools.Add(Tool("unity_set_ui_property", "Prepare a locally reviewed change to UI text, font size, graphic color, raycastTarget, interactable, fillAmount or Sprite asset. Requires a saved Canvas child; no immediate mutation.",
+                Schema(OptId(), P("text", Str()), P("fontSize", Number()), P("color", Color()),
+                    P("interactable", Bool(true)), P("raycastTarget", Bool(true)), P("fillAmount", Number()),
+                    P("spriteId", Str()), P("summary", Str())), false));
+            tools.Add(Tool("unity_set_ui_layout", "Prepare an approved Horizontal/Vertical/Grid LayoutGroup configuration. Can add the group to an existing RectTransform, change spacing/padding/size, and preserves guarded rollback.",
+                Required(Schema(OptId(), P("layoutType", Enum("horizontal", "vertical", "grid")), P("spacing", Number()),
+                    P("padding", Padding()), P("cellSize", Vec2()),
+                    P("constraint", Enum("flexible", "fixedColumnCount", "fixedRowCount")), P("constraintCount", Int(2, 1, 1000)),
+                    P("childControlWidth", Bool(true)), P("childControlHeight", Bool(true)),
+                    P("childForceExpandWidth", Bool(false)), P("childForceExpandHeight", Bool(false)),
+                    P("summary", Str())), "layoutType"), false));
             tools.Add(Tool("unity_inspect_ui", "Read a bounded uGUI hierarchy: RectTransforms, components, text, color, button state and Canvas mode.",
                 Schema(OptId(), P("maximumObjects", Int(100, 1, 200)))));
             tools.Add(Tool("unity_get_change_sets", "List pending/recent change sets and rollback state. includeOperations includes full review content.",
@@ -78,6 +93,9 @@ namespace WasimDevelopment.UnityMcpBridge
         private static JObject Int(int fallback, int min, int max) => new JObject { ["type"] = "integer", ["default"] = fallback, ["minimum"] = min, ["maximum"] = max };
         private static JObject Enum(params string[] values) => new JObject { ["type"] = "string", ["enum"] = new JArray(values) };
         private static JObject Vec2() => Required(Schema(P("x", Number()), P("y", Number())), "x", "y");
+        private static JObject Padding() => Required(Schema(P("left", Int(0, 0, 1024)),
+            P("right", Int(0, 0, 1024)), P("top", Int(0, 0, 1024)), P("bottom", Int(0, 0, 1024))),
+            "left", "right", "top", "bottom");
         private static JObject Color() => Required(Schema(P("r", Number()), P("g", Number()), P("b", Number()), P("a", Number())), "r", "g", "b", "a");
         private static JObject Vec3() => Required(Schema(P("x", Number()), P("y", Number()), P("z", Number())), "x", "y", "z");
         private static JObject Number() => new JObject { ["type"] = "number" };

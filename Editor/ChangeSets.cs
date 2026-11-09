@@ -19,7 +19,7 @@ namespace WasimDevelopment.UnityMcpBridge
         private static string Index => Path.Combine(Root, "index.json");
         private static JArray _records;
         private static readonly HashSet<string> Kinds = new HashSet<string> {
-            "set_property", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab" };
+            "set_property", "set_ui_layout", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab" };
 
         private static JArray Records
         {
@@ -156,6 +156,14 @@ namespace WasimDevelopment.UnityMcpBridge
                     if (kind == "create_ui" && primitive != null) throw new ArgumentException("uGUI objects cannot be 3D primitives.");
                     if (primitive != null && (!Enum.TryParse(primitive, out PrimitiveType parsed) || !Enum.IsDefined(typeof(PrimitiveType), parsed)))
                         throw new ArgumentException("Invalid primitive type.");
+                }
+                if (kind == "set_ui_layout")
+                {
+                    Object uiTarget = ExistingTarget((string)op["targetId"], aliases);
+                    if (uiTarget == null) throw new ArgumentException("UI layout needs a saved scene objectId.");
+                    GameObject uiObject = ObjectAccess.GameObjectOf(uiTarget);
+                    AddScene(sceneGuards, uiObject.scene);
+                    UiLayoutTool.Validate(uiObject, op);
                 }
                 if (kind == "set_property" || kind == "add_component" || kind == "save_prefab")
                 {
@@ -400,6 +408,10 @@ namespace WasimDevelopment.UnityMcpBridge
                 {
                     var prefab = PrefabUtility.SaveAsPrefabAsset(go, (string)op["path"], out bool success);
                     if (!success || prefab == null) throw new IOException("Could not create prefab.");
+                }
+                else if (kind == "set_ui_layout")
+                {
+                    UiLayoutTool.Apply(go, op);
                 }
                 else if (kind == "set_property")
                 {

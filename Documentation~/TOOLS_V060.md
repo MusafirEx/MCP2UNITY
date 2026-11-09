@@ -123,3 +123,8 @@ Example MCP arguments (position world absolute + Euler rotation + world scale):
 ## Unity uGUI Phase 1
 
 Four extra tools (`unity_create_canvas`, `unity_create_ui`, `unity_set_rect_transform`, `unity_inspect_ui`) add reviewed Canvas/uGUI support. See [UNITY_UI_TOOLS.md](UNITY_UI_TOOLS.md). The `create_ui` operation is also available in `unity_propose_change_set` for multi-object hierarchies using aliases. After this phase: 43 advertised MCP tools.
+
+
+## Unity uGUI Phase 2
+
+Two new locally-reviewed tools, `unity_set_ui_property` and `unity_set_ui_layout`, extend the catalog to 45 advertised tools. Detailed types, limits, examples and test coverage: [UNITY_UI_TOOLS.md](UNITY_UI_TOOLS.md).

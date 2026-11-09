@@ -18,6 +18,8 @@ namespace WasimDevelopment.UnityMcpBridge
                 case "unity_create_ui": return UiChangeTool.ProposeElement(args);
                 case "unity_set_rect_transform": return UiChangeTool.ProposeRectTransform(args);
                 case "unity_inspect_ui": return UiChangeTool.Inspect(args);
+                case "unity_set_ui_property": return UiStyleTool.Propose(args);
+                case "unity_set_ui_layout": return UiLayoutTool.Propose(args);
                 case "unity_get_change_sets": return ChangeSets.List(args["includeCompleted"]?.Value<bool>() ?? false, args["includeOperations"]?.Value<bool>() ?? false);
                 case "unity_propose_change_set_rollback": return ChangeSets.ProposeRollback((string)args["changeSetId"], (string)args["summary"]);
                 case "unity_start_trace": return DiagnosticSessions.StartTrace(args);

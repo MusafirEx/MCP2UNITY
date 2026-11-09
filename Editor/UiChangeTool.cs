@@ -286,8 +286,27 @@ namespace WasimDevelopment.UnityMcpBridge
                 if (tmp != null) item["text"] = Truncate(tmp.text);
                 Graphic graphic = go.GetComponent<Graphic>();
                 if (graphic != null) item["color"] = ObjectAccess.Value(graphic.color);
-                Button button = go.GetComponent<Button>();
-                if (button != null) item["interactable"] = button.interactable;
+                Selectable selectable = go.GetComponent<Selectable>();
+                if (selectable != null) item["interactable"] = selectable.interactable;
+                LayoutGroup layout = go.GetComponent<LayoutGroup>();
+                if (layout != null)
+                {
+                    item["layoutType"] = layout is HorizontalLayoutGroup ? "horizontal"
+                        : layout is VerticalLayoutGroup ? "vertical"
+                        : layout is GridLayoutGroup ? "grid" : "other";
+                    item["padding"] = new JObject { ["left"] = layout.padding.left,
+                        ["right"] = layout.padding.right, ["top"] = layout.padding.top,
+                        ["bottom"] = layout.padding.bottom };
+                    if (layout is HorizontalOrVerticalLayoutGroup hv)
+                        item["spacing"] = hv.spacing;
+                    else if (layout is GridLayoutGroup grid)
+                    {
+                        item["spacing"] = Vector(grid.spacing);
+                        item["cellSize"] = Vector(grid.cellSize);
+                        item["constraint"] = grid.constraint.ToString();
+                        item["constraintCount"] = grid.constraintCount;
+                    }
+                }
                 nodes.Add(item);
             }
             return new JObject {

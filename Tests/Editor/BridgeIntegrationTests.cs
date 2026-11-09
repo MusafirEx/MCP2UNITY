@@ -679,5 +679,252 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             Assert.Throws<InvalidOperationException>(() => ChangeSets.Approve((string)set["id"]));
             Assert.IsNull(_root.scene.GetRootGameObjects().FirstOrDefault(g => g.name == "StaleCanvas"));
         }
+
+
+        // ---- uGUI Phase 2: Styling & Layout ----
+
+        private GameObject UiStyleFixture(Type componentType)
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var element = new GameObject("UiPhase2Element", typeof(RectTransform));
+            SceneManager.MoveGameObjectToScene(element, _root.scene);
+            element.transform.SetParent(canvas.transform, false);
+            element.AddComponent(componentType);
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            return element;
+        }
+
+        private JObject UiStyleProposal(GameObject go, string property, JToken value)
+        {
+            var args = new JObject { ["objectId"] = ObjectAccess.Id(go), [property] = value };
+            JObject result = (JObject)ExtendedTools.Execute("unity_set_ui_property", args);
+            _proposals.Add((string)result["id"]);
+            return result;
+        }
+
+        private JObject UiLayoutProposal(GameObject go, JObject options)
+        {
+            options["objectId"] = ObjectAccess.Id(go);
+            JObject result = (JObject)ExtendedTools.Execute("unity_set_ui_layout", options);
+            _proposals.Add((string)result["id"]);
+            return result;
+        }
+
+        [Test]
+        public void UiPhase2CatalogRegistersBothWriteTools()
+        {
+            var tools = McpToolCatalog.Build().OfType<JObject>()
+                .ToDictionary(x => (string)x["name"]);
+            foreach (string name in new[] { "unity_set_ui_property", "unity_set_ui_layout" })
+            {
+                Assert.IsTrue(tools.ContainsKey(name));
+                Assert.IsFalse(tools[name]["annotations"]["readOnlyHint"].Value<bool>());
+            }
+        }
+
+        [Test]
+        public void UiStyleLegacyTextAndFontSizeUseReviewedChangeSets()
+        {
+            GameObject go = UiStyleFixture(typeof(Text));
+            JObject proposal = (JObject)ExtendedTools.Execute("unity_set_ui_property",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["text"] = "Updated through MCP", ["fontSize"] = 32 });
+            _proposals.Add((string)proposal["id"]);
+            Assert.AreEqual("Pending", (string)proposal["status"]);
+            Assert.AreNotEqual("Updated through MCP", go.GetComponent<Text>().text);
+            ChangeSets.Approve((string)proposal["id"]);
+            Assert.AreEqual("Updated through MCP", go.GetComponent<Text>().text);
+            Assert.AreEqual(32, go.GetComponent<Text>().fontSize);
+        }
+
+        [Test]
+        public void UiStyleTmpTextAndFontSizeAreWritable()
+        {
+            GameObject go = UiStyleFixture(typeof(TextMeshProUGUI));
+            JObject set = (JObject)ExtendedTools.Execute("unity_set_ui_property",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["text"] = "TMP label", ["fontSize"] = 27 });
+            _proposals.Add((string)set["id"]);
+            ChangeSets.Approve((string)set["id"]);
+            Assert.AreEqual("TMP label", go.GetComponent<TextMeshProUGUI>().text);
+            Assert.AreEqual(27, go.GetComponent<TextMeshProUGUI>().fontSize, 0.01f);
+        }
+
+        [Test]
+        public void UiStyleImageColorIsAppliedAfterApproval()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiStyleProposal(go, "color", new JObject {
+                ["r"] = .15, ["g"] = .30, ["b"] = .45, ["a"] = .60 });
+            Assert.AreEqual(Color.white, go.GetComponent<Image>().color);
+            ChangeSets.Approve((string)set["id"]);
+            Color color = go.GetComponent<Image>().color;
+            Assert.AreEqual(.15f, color.r, .002f);
+            Assert.AreEqual(.60f, color.a, .002f);
+        }
+
+        [Test]
+        public void UiStyleButtonInteractableIsEditable()
+        {
+            GameObject go = UiStyleFixture(typeof(Button));
+            Assert.IsTrue(go.GetComponent<Button>().interactable);
+            JObject set = UiStyleProposal(go, "interactable", new JValue(false));
+            ChangeSets.Approve((string)set["id"]);
+            Assert.IsFalse(go.GetComponent<Button>().interactable);
+        }
+
+        [Test]
+        public void UiStyleGraphicRaycastTargetIsEditable()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiStyleProposal(go, "raycastTarget", new JValue(false));
+            ChangeSets.Approve((string)set["id"]);
+            Assert.IsFalse(go.GetComponent<Image>().raycastTarget);
+        }
+
+        [Test]
+        public void UiStyleFillAmountIsEditable()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiStyleProposal(go, "fillAmount", new JValue(.42));
+            ChangeSets.Approve((string)set["id"]);
+            Assert.AreEqual(.42f, go.GetComponent<Image>().fillAmount, .002f);
+        }
+
+        [Test]
+        public void UiStyleRejectsNonUguiTransform()
+        {
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_ui_property",
+                new JObject { ["objectId"] = ObjectAccess.Id(_root), ["text"] = "wrong" }));
+        }
+
+        [Test]
+        public void UiStyleRejectsNonGraphicColorWithoutSceneMutation()
+        {
+            GameObject go = UiStyleFixture(typeof(Button));
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_ui_property",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["color"] = new JObject { ["r"] = 1, ["g"] = .5, ["b"] = 0, ["a"] = 1 } }));
+            Assert.IsFalse(_root.scene.isDirty);
+        }
+
+        [Test]
+        public void UiStyleRejectsOutOfRangeColor()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_ui_property",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["color"] = new JObject { ["r"] = 5, ["g"] = 0, ["b"] = 0, ["a"] = 1 } }));
+            Assert.IsFalse(_root.scene.isDirty);
+        }
+
+        [Test]
+        public void UiLayoutVerticalAddsGroupAndSpacingAndPadding()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiLayoutProposal(go, new JObject {
+                ["layoutType"] = "vertical", ["spacing"] = 12,
+                ["padding"] = new JObject { ["left"] = 5, ["right"] = 6,
+                    ["top"] = 7, ["bottom"] = 8 },
+                ["childControlWidth"] = true, ["childForceExpandHeight"] = false
+            });
+            Assert.IsNull(go.GetComponent<VerticalLayoutGroup>());
+            ChangeSets.Approve((string)set["id"]);
+            VerticalLayoutGroup layout = go.GetComponent<VerticalLayoutGroup>();
+            Assert.NotNull(layout);
+            Assert.AreEqual(12f, layout.spacing);
+            Assert.AreEqual(5, layout.padding.left);
+            Assert.AreEqual(8, layout.padding.bottom);
+            Assert.IsTrue(layout.childControlWidth);
+            Assert.IsFalse(layout.childForceExpandHeight);
+        }
+
+        [Test]
+        public void UiLayoutHorizontalAddsGroup()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiLayoutProposal(go, new JObject {
+                ["layoutType"] = "horizontal", ["spacing"] = 9
+            });
+            ChangeSets.Approve((string)set["id"]);
+            Assert.AreEqual(9f, go.GetComponent<HorizontalLayoutGroup>().spacing);
+        }
+
+        [Test]
+        public void UiLayoutGridSizeAndConstraintsAreApplied()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiLayoutProposal(go, new JObject {
+                ["layoutType"] = "grid", ["spacing"] = 4,
+                ["cellSize"] = new JObject { ["x"] = 130, ["y"] = 72 },
+                ["constraint"] = "fixedColumnCount", ["constraintCount"] = 3
+            });
+            ChangeSets.Approve((string)set["id"]);
+            GridLayoutGroup grid = go.GetComponent<GridLayoutGroup>();
+            Assert.NotNull(grid);
+            Assert.AreEqual(new Vector2(130, 72), grid.cellSize);
+            Assert.AreEqual(new Vector2(4, 4), grid.spacing);
+            Assert.AreEqual(GridLayoutGroup.Constraint.FixedColumnCount, grid.constraint);
+            Assert.AreEqual(3, grid.constraintCount);
+        }
+
+        [Test]
+        public void UiLayoutRejectsDifferentExistingLayoutType()
+        {
+            GameObject go = UiStyleFixture(typeof(VerticalLayoutGroup));
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_ui_layout",
+                new JObject { ["objectId"] = ObjectAccess.Id(go), ["layoutType"] = "horizontal" }));
+        }
+
+        [Test]
+        public void UiLayoutRejectsNonCanvasGameObject()
+        {
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_ui_layout",
+                new JObject { ["objectId"] = ObjectAccess.Id(_root), ["layoutType"] = "vertical" }));
+        }
+
+        [Test]
+        public void UiLayoutRejectsInvalidGridSize()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_ui_layout",
+                new JObject { ["objectId"] = ObjectAccess.Id(go),
+                    ["layoutType"] = "grid",
+                    ["cellSize"] = new JObject { ["x"] = 0, ["y"] = 72 } }));
+        }
+
+        [Test]
+        public void UiInspectIncludesLayoutSettings()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiLayoutProposal(go, new JObject {
+                ["layoutType"] = "vertical", ["spacing"] = 15
+            });
+            ChangeSets.Approve((string)set["id"]);
+            JObject inspection = (JObject)ExtendedTools.Execute("unity_inspect_ui",
+                new JObject { ["objectId"] = ObjectAccess.Id(go) });
+            JObject node = (JObject)((JArray)inspection["nodes"])[0];
+            Assert.AreEqual("vertical", (string)node["layoutType"]);
+            Assert.AreEqual(15f, node["spacing"].Value<float>());
+        }
+
+        [Test]
+        public void UiLayoutChangeSetRollbackRemovesGroup()
+        {
+            GameObject go = UiStyleFixture(typeof(Image));
+            JObject set = UiLayoutProposal(go, new JObject {
+                ["layoutType"] = "vertical", ["spacing"] = 5
+            });
+            ChangeSets.Approve((string)set["id"]);
+            Assert.NotNull(go.GetComponent<VerticalLayoutGroup>());
+            if (_root.scene.isDirty) Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            JObject rollback = ChangeSets.ProposeRollback((string)set["id"], "Restore layout fixture");
+            _proposals.Add((string)rollback["id"]);
+            ChangeSets.Approve((string)rollback["id"]);
+            GameObject original = SceneManager.GetSceneByPath(_scenePath).GetRootGameObjects()
+                .SelectMany(x => ObjectAccess.Walk(x, 20)).Single(x => x.name == "UiPhase2Element");
+            Assert.IsNull(original.GetComponent<VerticalLayoutGroup>());
+        }
     }
 }

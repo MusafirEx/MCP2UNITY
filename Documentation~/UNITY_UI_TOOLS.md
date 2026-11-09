@@ -79,3 +79,55 @@ Catalog and permission hints; proposal-only safety; Canvas components; EventSyst
 ## Unity 2022.3.62f3 EditMode findings (2026-11-09)
 
 Initial 33-test run: 27 passed, 6 failed. Two failures exposed a null-alias scene lookup in ChangeSets.Propose and four occurred because Unity rejects `Arial.ttf` as a built-in font. These were patched by separating creation-alias handling from component-alias handling and using `LegacyRuntime.ttf` for uGUI Text/Button labels. Re-run all 33 tests after updating the package; this note is not a claim of a passing test run.
+
+
+## Phase 2 — reviewed UI styling and layout
+
+This is an unverified-source release until installed in Unity and its 51 EditMode regression tests are run. The Phase 1 baseline (33/33 passed) remains the previous measured result.
+
+### unity_set_ui_property
+
+Pass a saved uGUI element objectId (or select it) and at least one of:
+
+- \`text\` (0–8192 characters): Text or TextMeshProUGUI
+- \`fontSize\` (1–256): Text or TextMeshProUGUI; legacy Text requires a whole number
+- \`color\` {r,g,b,a}, each 0–1: the element's Graphic component
+- \`interactable\` boolean: a Selectable-derived component (e.g. Button)
+- \`raycastTarget\` boolean: Graphic
+- \`fillAmount\` 0–1: Image (set Image Type=Filled for visible filling)
+- \`spriteId\`: a saved imported Sprite asset GlobalObjectId, for Image
+- \`summary\`: optional review description
+
+The tool verifies the selected component and serialized property before queuing an ordinary \`set_property\` Change Set. It does not directly update the scene. There is no arbitrary reflection or arbitrary callback invocation.
+
+Example:
+
+~~~json
+{"objectId":"<saved UI GameObject ID>","text":"Play Now","fontSize":30,"color":{"r":1,"g":0.8,"b":0.1,"a":1}}
+~~~
+
+### unity_set_ui_layout
+
+Pass a saved RectTransform under Canvas and:
+
+- \`layoutType\`: \`horizontal\`, \`vertical\`, or \`grid\` (required)
+- \`spacing\`: number 0–1024
+- \`padding\`: {left,right,top,bottom}, integer 0–1024
+- \`childControlWidth\`, \`childControlHeight\`, \`childForceExpandWidth\`, \`childForceExpandHeight\`: booleans (Horizontal/Vertical only)
+- \`cellSize\`: {x,y}, each 1–8192 (Grid only)
+- \`constraint\`: \`flexible\`, \`fixedColumnCount\`, \`fixedRowCount\` (Grid only)
+- \`constraintCount\`: integer 1–1000 (Grid only)
+- \`summary\`: optional review description
+
+Proposals use a new allowlisted \`set_ui_layout\` Change Set operation. Approval can add a missing LayoutGroup, but will refuse to replace a different existing LayoutGroup. A guarded rollback can remove a newly-added group. All operations require a saved, clean scene and local Unity approval.
+
+Example:
+
+~~~json
+{"objectId":"<saved Panel GameObject ID>","layoutType":"grid","cellSize":{"x":120,"y":60},"spacing":8,"constraint":"fixedColumnCount","constraintCount":3}
+~~~
+
+### Added automated coverage
+
+18 Phase 2 regression tests: tool catalog, deferred proposals, legacy Text/TMP text and font editing, Image color/fill/raycast, Button interactability, invalid style input rejections, Horizontal/Vertical/Grid layout configuration, conflict and invalid-dimension rejection, layout inspection and rollback. Total expected EditMode count: 51 (33 existing + 18 Phase 2). Passing these tests does not yet establish direct newly advertised tool availability through every ChatGPT connector configuration.
+
