@@ -75,3 +75,7 @@ Every alias must refer to an earlier creation within the same proposal; a non-Ca
 ## Regression coverage (19 new tests)
 
 Catalog and permission hints; proposal-only safety; Canvas components; EventSystem optional behavior; scaling resolution; parent and invalid type validation; Panel/Image/Button/Text/TMP creation; same-set aliases; RectTransform change proposals; non-RectTransform rejection; bounded inspection; rollback; and stale-scene guards. Run these alongside the original 14 regression tests. A source-side static audit is not equivalent to passing Unity EditMode tests.
+
+## Unity 2022.3.62f3 EditMode findings (2026-11-09)
+
+Initial 33-test run: 27 passed, 6 failed. Two failures exposed a null-alias scene lookup in ChangeSets.Propose and four occurred because Unity rejects `Arial.ttf` as a built-in font. These were patched by separating creation-alias handling from component-alias handling and using `LegacyRuntime.ttf` for uGUI Text/Button labels. Re-run all 33 tests after updating the package; this note is not a claim of a passing test run.

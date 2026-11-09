@@ -192,8 +192,13 @@ namespace WasimDevelopment.UnityMcpBridge
                 if (alias != null)
                 {
                     aliases.Add(alias);
-                    if (kind == "create_gameobject" || kind == "create_ui") aliasScenes[alias] = (string)op["scenePath"];
-                    if (kind == "create_ui") aliasUiTypes[alias] = (string)op["uiType"];
+                    if (kind == "create_gameobject" || kind == "create_ui")
+                    {
+                        // Creation aliases have no targetId. Do not try to resolve a null
+                        // dictionary key (which also broke ordinary create_gameobject aliases).
+                        aliasScenes[alias] = (string)op["scenePath"];
+                        if (kind == "create_ui") aliasUiTypes[alias] = (string)op["uiType"];
+                    }
                     else
                     {
                         string targetId = (string)op["targetId"];

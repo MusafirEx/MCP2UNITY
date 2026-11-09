@@ -178,7 +178,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     break;
                 case "text":
                     Text text = Undo.AddComponent<Text>(go);
-                    text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                     text.text = (string)op["text"] ?? go.name;
                     text.fontSize = Mathf.RoundToInt(op["fontSize"]?.Value<float>() ?? 24f);
                     text.alignment = TextAnchor.MiddleCenter;
@@ -217,7 +217,7 @@ namespace WasimDevelopment.UnityMcpBridge
             rect.anchorMax = Vector2.one;
             rect.offsetMin = rect.offsetMax = Vector2.zero;
             Text text = Undo.AddComponent<Text>(label);
-            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.text = value;
             text.fontSize = Mathf.RoundToInt(fontSize);
             text.alignment = TextAnchor.MiddleCenter;
