@@ -192,7 +192,8 @@ namespace WasimDevelopment.UnityMcpBridge
                 EditorGUILayout.LabelField(proposal.Path, EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(proposal.Summary, EditorStyles.wordWrappedLabel);
                 EditorGUILayout.TextArea(ScriptChangeManager.GetDiffPreview(proposal), _wrappedReviewTextArea,
-                    GUILayout.MinHeight(100), GUILayout.MaxHeight(300), GUILayout.ExpandWidth(true));
+                    GUILayout.MinHeight(100), GUILayout.MaxHeight(300), GUILayout.ExpandWidth(true),
+                    GUILayout.MaxWidth(Mathf.Max(160f, position.width - 44f)));
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Approve", GUILayout.Width(ReviewButtonWidth)))
                 {

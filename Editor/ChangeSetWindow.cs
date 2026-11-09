@@ -46,7 +46,8 @@ namespace WasimDevelopment.UnityMcpBridge
             string preview = (action ? item : item["operations"])?.ToString(Newtonsoft.Json.Formatting.Indented) ?? "";
             // Full copyable content; never truncate the material that is being approved.
             EditorGUILayout.TextArea(preview, _wrappedReviewTextArea,
-                GUILayout.MinHeight(60), GUILayout.MaxHeight(260), GUILayout.ExpandWidth(true));
+                GUILayout.MinHeight(60), GUILayout.MaxHeight(260), GUILayout.ExpandWidth(true),
+                    GUILayout.MaxWidth(Mathf.Max(160f, position.width - 44f)));
             if (GUILayout.Button("Copy complete review JSON")) EditorGUIUtility.systemCopyBuffer = item.ToString(Newtonsoft.Json.Formatting.Indented);
             if (item["scenes"] != null) EditorGUILayout.LabelField("Scenes: " + item["scenes"].ToString(Newtonsoft.Json.Formatting.None), EditorStyles.wordWrappedLabel);
             if (status == "Pending")
