@@ -1,7 +1,9 @@
 {
   "name": "WasimUnityMcpBridge.Editor.Tests",
   "references": [
-    "WasimUnityMcpBridge.Editor"
+    "WasimUnityMcpBridge.Editor",
+    "Unity.ugui",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [
     "Editor"

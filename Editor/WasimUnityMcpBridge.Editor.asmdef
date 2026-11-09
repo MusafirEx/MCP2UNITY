@@ -4,7 +4,9 @@
   "references": [
     "Unity.Newtonsoft.Json",
     "UnityEditor.TestRunner",
-    "UnityEngine.TestRunner"
+    "UnityEngine.TestRunner",
+    "Unity.ugui",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [
     "Editor"

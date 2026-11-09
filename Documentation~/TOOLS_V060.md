@@ -118,3 +118,8 @@ Example MCP arguments (position world absolute + Euler rotation + world scale):
   "summary": "Place the selected object at the target transform"
 }
 ~~~
+
+
+## Unity uGUI Phase 1
+
+Four extra tools (`unity_create_canvas`, `unity_create_ui`, `unity_set_rect_transform`, `unity_inspect_ui`) add reviewed Canvas/uGUI support. See [UNITY_UI_TOOLS.md](UNITY_UI_TOOLS.md). The `create_ui` operation is also available in `unity_propose_change_set` for multi-object hierarchies using aliases. After this phase: 43 advertised MCP tools.

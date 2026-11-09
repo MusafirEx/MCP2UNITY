@@ -8,6 +8,9 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using TMPro;
 
 namespace WasimDevelopment.UnityMcpBridge.Tests
 {
@@ -406,6 +409,275 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 Assert.IsFalse(ProjectSecurity.TryResolveReadableScript("Assets/../Library/hidden.cs", out _, out _));
             }
             finally { BridgePreferences.AllowPackageScripts = old; }
+        }
+
+        // ---- uGUI / Canvas MCP integration regressions ----
+
+        private GameObject UiFixtureCanvas()
+        {
+            var canvas = new GameObject("UiFixtureCanvas", typeof(RectTransform), typeof(Canvas));
+            SceneManager.MoveGameObjectToScene(canvas, _root.scene);
+            canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            return canvas;
+        }
+
+        private JObject UiOp(string type, string name, string parent, string alias = null)
+        {
+            var op = new JObject { ["kind"] = "create_ui", ["uiType"] = type,
+                ["name"] = name };
+            if (parent != null) op["parentId"] = parent;
+            if (alias != null) op["alias"] = alias;
+            return op;
+        }
+
+        [Test]
+        public void UiCatalogRegistersFourToolsWithCorrectPermissionHints()
+        {
+            var tools = McpToolCatalog.Build().OfType<JObject>().ToDictionary(t => (string)t["name"]);
+            foreach (string tool in new[] { "unity_create_canvas", "unity_create_ui", "unity_set_rect_transform" })
+                Assert.IsFalse(tools[tool]["annotations"]["readOnlyHint"].Value<bool>(), tool);
+            Assert.IsTrue(tools["unity_inspect_ui"]["annotations"]["readOnlyHint"].Value<bool>());
+        }
+
+        [Test]
+        public void UiCanvasProposalDoesNotMutateSceneUntilApproval()
+        {
+            int before = _root.scene.rootCount;
+            JObject pending = (JObject)UnityToolExecutor.Execute("unity_create_canvas",
+                new JObject { ["scenePath"] = _scenePath, ["name"] = "DeferredCanvas",
+                    ["createEventSystem"] = false });
+            _proposals.Add((string)pending["id"]);
+            Assert.AreEqual("Pending", (string)pending["status"]);
+            Assert.AreEqual(before, _root.scene.rootCount);
+            Assert.IsNull(_root.scene.GetRootGameObjects().FirstOrDefault(g => g.name == "DeferredCanvas"));
+        }
+
+        [Test]
+        public void UiCanvasCreatesRectScalerGraphicRaycasterAndEventSystem()
+        {
+            JObject set = Propose(UiOp("canvas", "FullCanvas", null, "$canvas"));
+            ChangeSets.Approve((string)set["id"]);
+            GameObject canvas = _root.scene.GetRootGameObjects().Single(g => g.name == "FullCanvas");
+            Assert.IsInstanceOf<RectTransform>(canvas.transform);
+            Assert.NotNull(canvas.GetComponent<Canvas>());
+            Assert.AreEqual(RenderMode.ScreenSpaceOverlay, canvas.GetComponent<Canvas>().renderMode);
+            Assert.NotNull(canvas.GetComponent<CanvasScaler>());
+            Assert.NotNull(canvas.GetComponent<GraphicRaycaster>());
+            Assert.NotNull(_root.scene.GetRootGameObjects().FirstOrDefault(g => g.GetComponent<EventSystem>() != null));
+        }
+
+        [Test]
+        public void UiCanvasCanSkipAutomaticEventSystem()
+        {
+            JObject op = UiOp("canvas", "NoEventCanvas", null);
+            op["createEventSystem"] = false;
+            JObject set = Propose(op);
+            ChangeSets.Approve((string)set["id"]);
+            Assert.NotNull(_root.scene.GetRootGameObjects().Single(g => g.name == "NoEventCanvas"));
+            Assert.IsFalse(_root.scene.GetRootGameObjects().Any(g => g.GetComponent<EventSystem>() != null));
+        }
+
+        [Test]
+        public void UiCanvasReferenceResolutionIsConfigurable()
+        {
+            JObject set = (JObject)ExtendedTools.Execute("unity_create_canvas", new JObject {
+                ["name"] = "ResolutionCanvas", ["scenePath"] = _scenePath,
+                ["createEventSystem"] = false,
+                ["referenceResolution"] = new JObject { ["x"] = 1280, ["y"] = 720 }
+            });
+            _proposals.Add((string)set["id"]);
+            ChangeSets.Approve((string)set["id"]);
+            GameObject canvas = _root.scene.GetRootGameObjects().Single(g => g.name == "ResolutionCanvas");
+            Assert.Less(Vector2.Distance(new Vector2(1280, 720), canvas.GetComponent<CanvasScaler>().referenceResolution), 0.01f);
+        }
+
+        [Test]
+        public void UiCanvasRejectsParentingUnderAnotherObject()
+        {
+            Assert.Throws<ArgumentException>(() => Propose(UiOp("canvas", "IllegalCanvas", ObjectAccess.Id(_root))));
+        }
+
+        [Test]
+        public void UiElementRejectsParentWithoutCanvasOrRectTransform()
+        {
+            Assert.Throws<ArgumentException>(() => Propose(UiOp("button", "OrphanButton", ObjectAccess.Id(_root))));
+        }
+
+        [Test]
+        public void UiElementRejectsUnknownType()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            Assert.Throws<ArgumentException>(() => Propose(UiOp("dangerousCustom", "Bad", ObjectAccess.Id(canvas))));
+        }
+
+        [Test]
+        public void UiPanelCreatesStretchingRectAndImage()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            JObject set = Propose(UiOp("panel", "BackgroundPanel", ObjectAccess.Id(canvas)));
+            ChangeSets.Approve((string)set["id"]);
+            Transform panel = canvas.transform.Find("BackgroundPanel");
+            Assert.NotNull(panel);
+            Assert.NotNull(panel.GetComponent<Image>());
+            var rect = (RectTransform)panel;
+            Assert.Less(Vector2.Distance(Vector2.zero, rect.anchorMin), 1e-4f);
+            Assert.Less(Vector2.Distance(Vector2.one, rect.anchorMax), 1e-4f);
+        }
+
+        [Test]
+        public void UiImageAcceptsExplicitColorAndPosition()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var op = UiOp("image", "ColorImage", ObjectAccess.Id(canvas));
+            op["color"] = new JObject { ["r"] = 0.2, ["g"] = 0.4, ["b"] = 0.6, ["a"] = 0.8 };
+            op["width"] = 128;
+            op["height"] = 64;
+            op["anchoredPosition"] = new JObject { ["x"] = 12, ["y"] = -34 };
+            JObject set = Propose(op);
+            ChangeSets.Approve((string)set["id"]);
+            var image = canvas.transform.Find("ColorImage").GetComponent<Image>();
+            Assert.Less(Mathf.Abs(image.color.r - 0.2f), 0.001f);
+            Assert.Less(Mathf.Abs(image.color.a - 0.8f), 0.001f);
+            Assert.Less(Vector2.Distance(new Vector2(12,-34), ((RectTransform)image.transform).anchoredPosition), 0.01f);
+        }
+
+        [Test]
+        public void UiButtonCreatesClickableImageAndReadableLabel()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var op = UiOp("button", "SaveButton", ObjectAccess.Id(canvas));
+            op["text"] = "Save Changes";
+            JObject set = Propose(op);
+            ChangeSets.Approve((string)set["id"]);
+            Transform button = canvas.transform.Find("SaveButton");
+            Assert.NotNull(button.GetComponent<Button>());
+            Assert.NotNull(button.GetComponent<Image>());
+            Text label = button.Find("Text").GetComponent<Text>();
+            Assert.AreEqual("Save Changes", label.text);
+            Assert.IsFalse(label.raycastTarget);
+        }
+
+        [Test]
+        public void UiTextCreatesFontAndContent()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var op = UiOp("text", "TitleText", ObjectAccess.Id(canvas));
+            op["text"] = "Main Menu";
+            op["fontSize"] = 36;
+            JObject set = Propose(op);
+            ChangeSets.Approve((string)set["id"]);
+            Text text = canvas.transform.Find("TitleText").GetComponent<Text>();
+            Assert.NotNull(text.font);
+            Assert.AreEqual("Main Menu", text.text);
+            Assert.AreEqual(36, text.fontSize);
+        }
+
+        [Test]
+        public void UiTmpTextCreatesExpectedContent()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var op = UiOp("tmpText", "Subtitle", ObjectAccess.Id(canvas));
+            op["text"] = "MCP2UNITY";
+            JObject set = Propose(op);
+            ChangeSets.Approve((string)set["id"]);
+            TextMeshProUGUI text = canvas.transform.Find("Subtitle").GetComponent<TextMeshProUGUI>();
+            Assert.NotNull(text);
+            Assert.AreEqual("MCP2UNITY", text.text);
+        }
+
+        [Test]
+        public void UiAliasesCreateCanvasPanelAndButtonInOneReview()
+        {
+            JObject set = Propose(
+                UiOp("canvas", "AliasCanvas", null, "$canvas"),
+                UiOp("panel", "AliasPanel", "$canvas", "$panel"),
+                UiOp("button", "AliasButton", "$panel", "$button"));
+            Assert.IsNull(_root.scene.GetRootGameObjects().FirstOrDefault(g => g.name == "AliasCanvas"));
+            ChangeSets.Approve((string)set["id"]);
+            GameObject canvas = _root.scene.GetRootGameObjects().Single(g => g.name == "AliasCanvas");
+            Assert.NotNull(canvas.transform.Find("AliasPanel/AliasButton").GetComponent<Button>());
+            JObject applied = ChangeSets.List(true).OfType<JObject>().Single(c => (string)c["id"] == (string)set["id"]);
+            Assert.NotNull(applied["createdObjects"]["$canvas"]);
+            Assert.NotNull(applied["createdObjects"]["$button"]);
+        }
+
+        [Test]
+        public void UiRectTransformToolProposesAndAppliesAnchorAndPivot()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var element = new GameObject("LayoutTarget", typeof(RectTransform));
+            SceneManager.MoveGameObjectToScene(element, _root.scene);
+            element.transform.SetParent(canvas.transform, false);
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            JObject set = (JObject)ExtendedTools.Execute("unity_set_rect_transform", new JObject {
+                ["objectId"] = ObjectAccess.Id(element),
+                ["anchorMin"] = new JObject { ["x"] = 0, ["y"] = 0 },
+                ["anchorMax"] = new JObject { ["x"] = 1, ["y"] = 1 },
+                ["pivot"] = new JObject { ["x"] = 0.25, ["y"] = 0.75 }
+            });
+            _proposals.Add((string)set["id"]);
+            Assert.AreEqual("Pending", (string)set["status"]);
+            ChangeSets.Approve((string)set["id"]);
+            var rect = (RectTransform)element.transform;
+            Assert.Less(Vector2.Distance(Vector2.zero, rect.anchorMin), 1e-4f);
+            Assert.Less(Vector2.Distance(Vector2.one, rect.anchorMax), 1e-4f);
+            Assert.Less(Vector2.Distance(new Vector2(.25f,.75f), rect.pivot), 1e-4f);
+        }
+
+        [Test]
+        public void UiRectTransformRejectsOrdinaryTransform()
+        {
+            Assert.Throws<ArgumentException>(() => ExtendedTools.Execute("unity_set_rect_transform", new JObject {
+                ["objectId"] = ObjectAccess.Id(_root),
+                ["sizeDelta"] = new JObject { ["x"] = 100, ["y"] = 50 }
+            }));
+        }
+
+        [Test]
+        public void UiInspectReadsCanvasAndButtonHierarchy()
+        {
+            GameObject canvas = UiFixtureCanvas();
+            var op = UiOp("button", "InspectMe", ObjectAccess.Id(canvas));
+            JObject set = Propose(op);
+            ChangeSets.Approve((string)set["id"]);
+            JObject tree = (JObject)ExtendedTools.Execute("unity_inspect_ui", new JObject {
+                ["objectId"] = ObjectAccess.Id(canvas), ["maximumObjects"] = 10
+            });
+            JArray nodes = (JArray)tree["nodes"];
+            Assert.GreaterOrEqual(nodes.Count, 2);
+            JObject button = nodes.OfType<JObject>().Single(n => (string)n["name"] == "InspectMe");
+            Assert.IsTrue(button["interactable"].Value<bool>());
+            Assert.AreEqual(2, ((JObject)button["anchorMin"]).Count);
+        }
+
+        [Test]
+        public void UiRollbackRestoresSceneAfterCreatingCanvas()
+        {
+            int before = _root.scene.rootCount;
+            JObject set = Propose(UiOp("canvas", "RollbackCanvas", null, "$rollback"));
+            ChangeSets.Approve((string)set["id"]);
+            Assert.Greater(_root.scene.rootCount, before);
+            if (_root.scene.isDirty) Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            JObject rollback = ChangeSets.ProposeRollback((string)set["id"], "Clean temporary Canvas");
+            _proposals.Add((string)rollback["id"]);
+            ChangeSets.Approve((string)rollback["id"]);
+            Scene restored = SceneManager.GetSceneByPath(_scenePath);
+            Assert.AreEqual(before, restored.rootCount);
+            Assert.IsNull(restored.GetRootGameObjects().FirstOrDefault(g => g.name == "RollbackCanvas"));
+        }
+
+        [Test]
+        public void UiStaleSceneGuardRejectsCanvasCreation()
+        {
+            JObject set = Propose(UiOp("canvas", "StaleCanvas", null));
+            _root.name = "ChangedSinceProposal";
+            EditorSceneManager.MarkSceneDirty(_root.scene);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_root.scene));
+            Assert.Throws<InvalidOperationException>(() => ChangeSets.Approve((string)set["id"]));
+            Assert.IsNull(_root.scene.GetRootGameObjects().FirstOrDefault(g => g.name == "StaleCanvas"));
         }
     }
 }

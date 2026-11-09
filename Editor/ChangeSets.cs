@@ -19,7 +19,7 @@ namespace WasimDevelopment.UnityMcpBridge
         private static string Index => Path.Combine(Root, "index.json");
         private static JArray _records;
         private static readonly HashSet<string> Kinds = new HashSet<string> {
-            "set_property", "add_component", "create_gameobject", "create_script", "replace_script", "save_prefab" };
+            "set_property", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab" };
 
         private static JArray Records
         {
@@ -89,6 +89,7 @@ namespace WasimDevelopment.UnityMcpBridge
             var sceneGuards = new JObject();
             var aliases = new HashSet<string>(StringComparer.Ordinal);
             var aliasScenes = new Dictionary<string, string>();
+            var aliasUiTypes = new Dictionary<string, string>();
             var changedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var prepared = (JArray)operations.DeepClone();
             foreach (JObject op in prepared)
@@ -96,7 +97,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 string kind = (string)op["kind"];
                 if (!Kinds.Contains(kind ?? "")) throw new ArgumentException("Unsupported operation: " + kind);
                 string alias = (string)op["alias"];
-                if (alias != null && (kind != "create_gameobject" && kind != "add_component"))
+                if (alias != null && (kind != "create_gameobject" && kind != "create_ui" && kind != "add_component"))
                     throw new ArgumentException("Only object/component creation can define an alias.");
                 if (alias != null && (!System.Text.RegularExpressions.Regex.IsMatch(alias, @"^\$[A-Za-z][A-Za-z0-9_]{0,39}$") || aliases.Contains(alias)))
                     throw new ArgumentException("Invalid or duplicate alias: " + alias);
@@ -125,12 +126,25 @@ namespace WasimDevelopment.UnityMcpBridge
                             throw new ArgumentException("Script content must contain 1-256 KB of UTF-8 text.");
                     }
                 }
-                if (kind == "create_gameobject")
+                if (kind == "create_gameobject" || kind == "create_ui")
                 {
+                    if (kind == "create_ui") UiChangeTool.ValidateCreate(op);
                     string name = (string)op["name"];
                     if (string.IsNullOrWhiteSpace(name) || name.Length > 120 || name.IndexOf('/') >= 0) throw new ArgumentException("Invalid GameObject name.");
                     string parent = (string)op["parentId"];
                     Object parentObject = string.IsNullOrEmpty(parent) ? null : ExistingTarget(parent, aliases);
+                    if (kind == "create_ui" && (string)op["uiType"] != "canvas")
+                    {
+                        if (parentObject != null)
+                        {
+                            GameObject parentGo = ObjectAccess.GameObjectOf(parentObject);
+                            if (parentGo == null || !(parentGo.transform is RectTransform) ||
+                                parentGo.GetComponentInParent<UnityEngine.Canvas>() == null)
+                                throw new ArgumentException("UI parent must belong to an existing Canvas hierarchy.");
+                        }
+                        else if (parent == null || !aliasUiTypes.ContainsKey(parent))
+                            throw new ArgumentException("UI parent must reference an earlier create_ui alias or saved Canvas object.");
+                    }
                     string parentScene = parentObject != null ? ObjectAccess.GameObjectOf(parentObject).scene.path
                         : parent != null && aliasScenes.TryGetValue(parent, out string aliasScene) ? aliasScene : null;
                     string scenePath = parentScene ?? (string)op["scenePath"] ?? SceneManager.GetActiveScene().path;
@@ -139,6 +153,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     op["scenePath"] = scenePath;
                     AddScene(sceneGuards, LoadedScene(scenePath));
                     string primitive = (string)op["primitive"];
+                    if (kind == "create_ui" && primitive != null) throw new ArgumentException("uGUI objects cannot be 3D primitives.");
                     if (primitive != null && (!Enum.TryParse(primitive, out PrimitiveType parsed) || !Enum.IsDefined(typeof(PrimitiveType), parsed)))
                         throw new ArgumentException("Invalid primitive type.");
                 }
@@ -177,7 +192,8 @@ namespace WasimDevelopment.UnityMcpBridge
                 if (alias != null)
                 {
                     aliases.Add(alias);
-                    if (kind == "create_gameobject") aliasScenes[alias] = (string)op["scenePath"];
+                    if (kind == "create_gameobject" || kind == "create_ui") aliasScenes[alias] = (string)op["scenePath"];
+                    if (kind == "create_ui") aliasUiTypes[alias] = (string)op["uiType"];
                     else
                     {
                         string targetId = (string)op["targetId"];
@@ -336,6 +352,10 @@ namespace WasimDevelopment.UnityMcpBridge
                 if (kind == "create_script")
                     AtomicFile.WriteText(full + ".meta", "fileFormatVersion: 2\nguid: " + Guid.NewGuid().ToString("N")
                         + "\nMonoImporter:\n  externalObjects: {}\n  serializedVersion: 2\n  defaultReferences: []\n  executionOrder: 0\n  icon: {instanceID: 0}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n");
+            }
+            else if (kind == "create_ui")
+            {
+                created = UiChangeTool.ApplyCreate(op, aliases);
             }
             else if (kind == "create_gameobject")
             {
