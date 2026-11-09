@@ -10,11 +10,17 @@ namespace WasimDevelopment.UnityMcpBridge
         private Vector2 _scroll;
         private bool _completed;
         private string _message = "";
+        private GUIStyle _wrappedReviewTextArea;
+        private const float ReviewButtonWidth = 92f;
+
+        private void OnEnable() => minSize = new Vector2(280f, 300f);
 
         [MenuItem("Window/Wasim Development/Change Sets and Actions")]
         public static void Open() => GetWindow<ChangeSetWindow>("Wasim MCP Reviews");
         private void OnGUI()
         {
+            if (_wrappedReviewTextArea == null)
+                _wrappedReviewTextArea = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
             EditorGUILayout.LabelField("Change sets and Editor actions", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("Approve only after reviewing every operation. Change sets save affected scenes and retain guarded file backups. Test/Play actions execute project code. No remote approve endpoint exists.", MessageType.Info);
             _completed = EditorGUILayout.Toggle("Show completed change sets", _completed);
@@ -39,7 +45,8 @@ namespace WasimDevelopment.UnityMcpBridge
             EditorGUILayout.LabelField((string)item["summary"] ?? "", EditorStyles.wordWrappedLabel);
             string preview = (action ? item : item["operations"])?.ToString(Newtonsoft.Json.Formatting.Indented) ?? "";
             // Full copyable content; never truncate the material that is being approved.
-            EditorGUILayout.TextArea(preview, GUILayout.MinHeight(60), GUILayout.MaxHeight(260));
+            EditorGUILayout.TextArea(preview, _wrappedReviewTextArea,
+                GUILayout.MinHeight(60), GUILayout.MaxHeight(260), GUILayout.ExpandWidth(true));
             if (GUILayout.Button("Copy complete review JSON")) EditorGUIUtility.systemCopyBuffer = item.ToString(Newtonsoft.Json.Formatting.Indented);
             if (item["scenes"] != null) EditorGUILayout.LabelField("Scenes: " + item["scenes"].ToString(Newtonsoft.Json.Formatting.None), EditorStyles.wordWrappedLabel);
             if (status == "Pending")
@@ -47,11 +54,12 @@ namespace WasimDevelopment.UnityMcpBridge
                 EditorGUILayout.BeginHorizontal();
                 using (new EditorGUI.DisabledScope(EditorApplication.isCompiling || EditorApplication.isUpdating))
                 {
-                    if (GUILayout.Button("Approve"))
+                    if (GUILayout.Button("Approve", GUILayout.Width(ReviewButtonWidth)))
                         Perform(() => { if (action) EditorActions.Approve(id); else ChangeSets.Approve(id); }, "Approved " + id);
-                    if (GUILayout.Button("Reject"))
+                    if (GUILayout.Button("Reject", GUILayout.Width(ReviewButtonWidth)))
                         Perform(() => { if (action) EditorActions.Reject(id); else ChangeSets.Reject(id); }, "Rejected " + id);
                 }
+                GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
             }
             if (!action && status == "Applied" && (string)item["kind"] == "Changes" && GUILayout.Button("Prepare rollback"))

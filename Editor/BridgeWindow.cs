@@ -13,6 +13,8 @@ namespace WasimDevelopment.UnityMcpBridge
         private bool _showHistory = true;
         private string _message = string.Empty;
         private MessageType _messageType = MessageType.None;
+        private GUIStyle _wrappedReviewTextArea;
+        private const float ReviewButtonWidth = 92f;
 
         [MenuItem("Window/Wasim Development/Unity MCP Bridge")]
         public static void Open() => GetWindow<BridgeWindow>("Unity MCP Bridge");
@@ -181,23 +183,28 @@ namespace WasimDevelopment.UnityMcpBridge
                 return;
             }
 
+            if (_wrappedReviewTextArea == null)
+                _wrappedReviewTextArea = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+
             foreach (ScriptChangeProposal proposal in proposals)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 EditorGUILayout.LabelField(proposal.Path, EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(proposal.Summary, EditorStyles.wordWrappedLabel);
-                EditorGUILayout.TextArea(ScriptChangeManager.GetDiffPreview(proposal), GUILayout.MinHeight(100));
+                EditorGUILayout.TextArea(ScriptChangeManager.GetDiffPreview(proposal), _wrappedReviewTextArea,
+                    GUILayout.MinHeight(100), GUILayout.MaxHeight(300), GUILayout.ExpandWidth(true));
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Approve"))
+                if (GUILayout.Button("Approve", GUILayout.Width(ReviewButtonWidth)))
                 {
                     bool ok = ScriptChangeManager.Approve(proposal.Id, out string result);
                     _message = result; _messageType = ok ? MessageType.Info : MessageType.Error;
                 }
-                if (GUILayout.Button("Reject"))
+                if (GUILayout.Button("Reject", GUILayout.Width(ReviewButtonWidth)))
                 {
                     bool ok = ScriptChangeManager.Reject(proposal.Id, out string result);
                     _message = result; _messageType = ok ? MessageType.Info : MessageType.Error;
                 }
+                GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
             }
