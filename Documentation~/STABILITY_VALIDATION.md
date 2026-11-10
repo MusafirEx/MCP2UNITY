@@ -78,6 +78,13 @@ Save scenes and confirm no pending Change Sets. Trigger a normal Editor domain r
 - A subsequent independent bridge read confirmed **Companion PID 24496**, ngrok `Ready`, 47 tools, clean Unity Console and a saved, clean gameplay scene with five original roots, and no pending Change Sets.
 - The manual **Companion restart observer test is still pending**. Its observer now waits for the new process to reach Running *and*, if the public test is requested, ngrok `Ready` before checking post-restart handshakes, to avoid racing the tunnel startup. This follow-up change is not yet verified on the user's Windows host.
 
+## Manual Companion restart / ngrok recovery — PASSED (2026-11-10)
+
+- Ran the Windows observer with `-Iterations 3 -TestPublicTunnel -ObserveRestart -RestartWindowSeconds 120`. Baseline direct local and public HTTPS MCP JSON-RPC handshakes both passed and advertised 47 tools. The three pre-restart local rounds passed (**280, 272, 317 ms**, average **290 ms**, max **317 ms**).
+- At `Restart observation armed`, the user initiated **Restart Companion** in Unity. The observer reported **`PASS post-restart local MCP: 47 tools; PID changed`** and **`PASS post-restart ngrok MCP: 47 tools`**. It finished with **`Status-file read recoveries: 0 (retry attempts: 0)`** and **`PASS MCP2UNITY stability smoke complete`**.
+- Independently verified afterward through the connected Unity MCP tools: new Companion PID **10260** (previous **24496**), Companion `Running`, ngrok `Ready`, Unity IPC connected and advertised tool count 47; no console errors, no outstanding change sets and no ongoing compilation; the saved MuOnBaArPrototype scene remained clean with its original **five** root objects.
+- **Scope:** proves one controlled manual process restart and restored **local and public HTTPS** JSON-RPC. It does not establish unattended recovery from OS process crashes, changing URLs or prolonged network outages. Historical transient status-file visibility gaps remain recorded above.
+
 ## Status and exit criteria
 
 | Test | Current evidence |
@@ -88,6 +95,6 @@ Save scenes and confirm no pending Change Sets. Trigger a normal Editor domain r
 | Repeated local MCP handshake script | **PASSED 2026-11-10**: 12/12, average 290 ms, maximum 352 ms; zero status-file read recoveries or retries in this run |
 | Actual public ngrok HTTPS round trip | **PASSED 2026-11-10**: public JSON-RPC initialized, 47 tools, ping and live Unity status via ngrok |
 | Unity Editor domain reload with existing running Companion | **Passed on 2026-11-10** (Editor Action `27efd2959d84` accepted; Editor.log confirms public API compilation request, successful Tundra build and MonoManager domain reload; Companion PID 20996 unchanged; ngrok `Ready`; Unity IPC and 47 tools responsive; scene clean with 5 original roots) |
-| Windows Companion restart after PowerShell patch | **Not yet tested after patch** |
+| Windows Companion restart after PowerShell patch | **PASSED 2026-11-10**: observed PID change 24496 → 10260; 3/3 pre-restart local calls, post-restart local and public HTTPS calls with 47 tools, 0 status-read recoveries |
 
-Do not claim full Windows/ngrok transport certification until the outstanding checks have been run and inspected. Share only sanitized failure details, never private endpoints or ngrok credentials.
+The defined Windows PowerShell function, local/public JSON-RPC, controlled Editor domain reload and **manual Companion restart** checks have now passed. Do not extrapolate these checks to unattended crash recovery or prolonged outages. Share only sanitized failure details, never private endpoints or ngrok credentials.
