@@ -13,13 +13,13 @@ On 2026-11-10, a connected Windows Unity 2022.3.62f3 Editor answered **12 consec
 
 This verifies a short live burst, **not** continuous uptime, service restart recovery or real ngrok HTTP reachability. A `Ready` status alone does not establish that public HTTPS requests succeed.
 
-## Reliability fix and test changes (Windows verification pending)
+## Reliability fix and function tests (Windows offline regression PASSED)
 
-`Companion~/wdmcp-companion.ps1` now uses .NET `File.Replace` for existing JSON destinations and `File.Move` for new ones, with bounded retries. It no longer intentionally deletes the published status/response file before replacement.
+`Companion~/wdmcp-companion.ps1` now uses .NET `File.Replace` with an explicit unique `.bak-<GUID>` backup path for existing JSON destinations, and `File.Move` for new ones, with bounded retries and cleanup. This avoids both the prior delete-then-move missing-file gap and a Windows PowerShell 5.1 error when passing `$null` as the backup path.
 
 `Tests~/test-companion-functions.ps1` now tests file replacement while a reader remains open, checks complete JSON/temporary-file cleanup, and exercises fresh/stale heartbeat recovery.
 
-**Neither the patched companion nor the new PowerShell test has yet been verified on the user's Windows host.** A running Companion continues using its previous loaded script until restarted after a UPM update.
+**Verified on the user's Windows host (2026-11-10):** the updated `Tests~/test-companion-functions.ps1` completed successfully: heartbeat, JSON `[]`, array of objects, array of numbers and `null`, MCP image content, baseline overwrite, 18 atomic file replacements while a read handle remained open, cleanup of `.tmp-*` and `.bak-*`, stale heartbeat detection and fresh heartbeat recovery all printed PASS. The test is offline and does not prove the running Companion has adopted the patched script. A running Companion continues using its previous loaded script until restarted after the UPM update.
 
 ## Procedure A — isolated Windows PowerShell regression
 
@@ -61,7 +61,7 @@ Save scenes and confirm no pending Change Sets. Trigger a normal Editor domain r
 | --- | --- |
 | Unity automation Phases 1–7 | **120/120 passed** |
 | Live short connector burst | **12/12 passed** |
-| Modified PowerShell function regression | **Not yet run on Windows** |
+| Modified PowerShell function regression | **PASSED 2026-11-10 on Windows PowerShell 5.1**: all reported assertions including JSON `null`, native MCP image, 18 held-reader atomic replacements, temp/backup cleanup and heartbeat recovery |
 | Repeated local MCP handshake script | **Not yet run on Windows** |
 | Actual public ngrok HTTPS round trip | **Not yet run after patch** |
 | Unity Editor domain reload with existing running Companion | **Passed on 2026-11-10** (Editor Action `27efd2959d84` accepted; Editor.log confirms public API compilation request, successful Tundra build and MonoManager domain reload; Companion PID 20996 unchanged; ngrok `Ready`; Unity IPC and 47 tools responsive; scene clean with 5 original roots) |
