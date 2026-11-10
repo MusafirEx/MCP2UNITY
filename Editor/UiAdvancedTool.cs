@@ -108,6 +108,12 @@ namespace WasimDevelopment.UnityMcpBridge
 
         private static void CreateToggle(GameObject go, JObject op)
         {
+            // A transparent root Image makes the entire Toggle row raycastable.
+            // Otherwise only the small Background checkmark receives pointer hits
+            // because the Label Text deliberately has raycastTarget=false.
+            Image hitSurface = Undo.AddComponent<Image>(go);
+            hitSurface.color = new Color(1, 1, 1, 0);
+            hitSurface.raycastTarget = true;
             Toggle toggle = Undo.AddComponent<Toggle>(go);
             RectTransform bg = Child(go.transform, "Background", new Vector2(0, 0.5f),
                 new Vector2(0, 0.5f));

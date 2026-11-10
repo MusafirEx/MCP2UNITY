@@ -1037,6 +1037,8 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             GameObject go = UiPhase3Find("Phase3Toggle");
             Toggle toggle = go.GetComponent<Toggle>();
             Assert.NotNull(toggle);
+            Assert.NotNull(go.GetComponent<Image>(), "The Toggle row must have a full-area raycast surface.");
+            Assert.IsTrue(go.GetComponent<Image>().raycastTarget);
             Assert.IsTrue(toggle.isOn);
             Assert.NotNull(toggle.targetGraphic);
             Assert.NotNull(toggle.graphic);

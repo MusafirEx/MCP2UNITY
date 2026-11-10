@@ -1,0 +1,20 @@
+{
+  "name": "WasimUnityMcpBridge.PlayMode.Tests",
+  "rootNamespace": "WasimDevelopment.UnityMcpBridge.Tests",
+  "references": [
+    "Unity.ugui"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

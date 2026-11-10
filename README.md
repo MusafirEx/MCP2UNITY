@@ -1,10 +1,10 @@
 # MCP2UNITY
 
-**Version: 0.5.2 (experimental backport)** | **Unity: 2022.3 LTS / 2022.3.22f1** | **Windows PowerShell companion**
+**Version: 0.5.2 (experimental backport)** | **Unity: 2022.3 LTS (validated on 2022.3.62f3)** | **Windows PowerShell companion**
 
 MCP2UNITY restarts the original Wasim Unity MCP Bridge from its **v0.5.1** source instead of upgrading the transport to v0.6.0. The v0.5.1 standalone PowerShell companion and its Unity Editor file-IPC architecture are retained; 17 optional tools from v0.6.0 are backported into separate Editor modules. This rebuild has 21 original tool entries + 17 backported entries + 1 reviewed Transform tool + 8 uGUI tools = **47 advertised MCP tools**.
 
-> **Verification status:** Phases 1–2 were compiled and tested in a live Unity 2022.3.62f3 MuOnBaAr project: 51/51 EditMode tests passed and Canvas/Panel/Button/Styling/Layout were exercised through the ChatGPT MCP connector. Phase 3 source is a **new test candidate** until the updated UPM package compiles, its 22 added EditMode tests run, and local-review workflows are verified. Production Windows companion/Unity regressions beyond these tests have not been certified.
+> **Verification status:** All **73/73 EditMode tests (Phases 1–3)** passed in Unity 2022.3.62f3 with the connected MCP bridge advertising 47 tools and no reported compilation/Console errors. Canvas/Panel/Button/Styling/Layout creation was exercised end-to-end in the MuOnBaAr test scene, which was restored to five original root objects. **Phase 4 adds 13 PlayMode interaction tests as an unverified candidate**; these must run in Unity before claiming runtime validation. No standalone Windows companion/player-build certification is implied.
 
 ## Why this build?
 
@@ -51,7 +51,7 @@ The `unity_set_transform` tool prepares local/world Position, Euler Rotation and
 
 Enable the specific permissions in the bridge window, then review local proposals through **Window > Wasim Development > Change Sets and Actions**. Approval and rollback are local actions, not public MCP endpoints. Review every proposed operation; Unity callbacks and project tests may execute project-defined code.
 
-### Unity uGUI Phases 1–3
+### Unity uGUI Phases 1–4
 
 The following eight uGUI MCP tools are included in the catalog:
 
@@ -66,7 +66,7 @@ The following eight uGUI MCP tools are included in the catalog:
 
 Write tools only propose locally reviewed changes, so the Unity Review window must approve them. No remote approval endpoint is added. Creation operations support aliases (including `$createdCanvas` and `$createdUi` for dedicated calls) and retain scene-backup rollback.
 
-See [Unity uGUI MCP tools](Documentation~/UNITY_UI_TOOLS.md) for schemas and test scope. UI Toolkit/UXML, arbitrary runtime callback method bindings, and advanced Button events beyond allowlisted SetActive(bool) are **not supported**. Phase 1 and 2 passed 51/51 EditMode tests in live Unity 2022.3.62f3, and the direct Canvas/Panel/Button/Styling/Layout integration test succeeded. Phase 3 adds 22 new EditMode tests (73 total expected); these require an updated UPM install and Unity Test Runner before being considered passed. The automated rollback guard correctly blocked restoration when saved scene files diverged; clean temporary UI was instead deleted manually with verification.
+See [Unity uGUI MCP tools](Documentation~/UNITY_UI_TOOLS.md) for schemas and test scope. UI Toolkit/UXML, arbitrary runtime callback method bindings, and advanced Button events beyond allowlisted SetActive(bool) are **not supported**. All 73 Phase 1–3 EditMode tests passed in Unity 2022.3.62f3, and the direct Canvas/Panel/Button/Styling/Layout MCP integration test succeeded. Phase 4 adds 13 separate PlayMode tests of actual UI event dispatch and input behavior. These are **test candidates** until run using the Unity Test Runner in PlayMode; PlayMode fixture tests do not by themselves demonstrate serialized MCP event persistence or clicks in every target game scene. The rollback guard correctly blocked an unsafe restore when scene files diverged; temporary UI was removed manually, and the original five root objects were verified.
 
 ### Verification on your Windows workstation
 
@@ -110,3 +110,8 @@ MCP Client -> ngrok HTTPS -> PowerShell companion (v0.5.1 base)
 ## Source and license
 
 Original source: [wasim-development/wasim-unity-mcp-bridge v0.5.1](https://github.com/wasim-development/wasim-unity-mcp-bridge/tree/v0.5.1) (commit `9061958a372df692daf056ba03b5aff283b6d99d`). Feature reference: [v0.6.0](https://github.com/wasim-development/wasim-unity-mcp-bridge/tree/v0.6.0) (commit `bd4f758e7fde2a76c9b4c032e6882675b3e934df`). Original paths and Unity .meta GUIDs are preserved. The upstream restrictive LICENSE.md is retained: publication/redistribution requires permission from Wasim Development.
+
+
+### Unity uGUI Phase 4 — PlayMode interaction tests (candidate)
+
+`Tests/PlayMode/WasimUnityMcpBridge.PlayMode.Tests.asmdef` and `UiRuntimePlayModeTests.cs` add **13 Unity PlayMode tests** for Button pointer clicks, `SetActive` callbacks, disabled Buttons, `GraphicRaycaster` hit tests, Slider value/range/whole-numbers and silent updates, Toggle pointer clicks and interactability, legacy InputField text/limits/callbacks, and ScrollRect normalized movement and drag. They use transient Canvas/EventSystem fixtures and destroy them after each test; no gameplay scene assets are saved. These tests exercise the Unity runtime interaction layer; the MCP-created hierarchy and persistent Button listener are separately checked by the 73 EditMode tests. A live end-to-end MCP UI PlayMode test is still recommended. **Do not claim 13/13 passed before running them.**
