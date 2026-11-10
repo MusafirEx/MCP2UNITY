@@ -64,6 +64,7 @@ Save scenes and confirm no pending Change Sets. Trigger a normal Editor domain r
 | Modified PowerShell function regression | **Not yet run on Windows** |
 | Repeated local MCP handshake script | **Not yet run on Windows** |
 | Actual public ngrok HTTPS round trip | **Not yet run after patch** |
-| Companion restart and Unity reload recovery | **Not yet run after patch** |
+| Unity Editor domain reload with existing running Companion | **Passed on 2026-11-10** (Editor Action `27efd2959d84` accepted; Editor.log confirms public API compilation request, successful Tundra build and MonoManager domain reload; Companion PID 20996 unchanged; ngrok `Ready`; Unity IPC and 47 tools responsive; scene clean with 5 original roots) |
+| Windows Companion restart after PowerShell patch | **Not yet tested after patch** |
 
 Do not claim full Windows/ngrok transport certification until the outstanding checks have been run and inspected. Share only sanitized failure details, never private endpoints or ngrok credentials.
