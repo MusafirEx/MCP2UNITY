@@ -76,6 +76,14 @@ See [Unity uGUI MCP tools](Documentation~/UNITY_UI_TOOLS.md) for schemas and tes
 
 `Tests/Editor/FinalContractIntegrationTests.cs` adds **12 EditMode tests** for the 47-tool catalog, schema strictness and bounds, permission hints, stable read-only MCP responses, and invalid-input rejection. **All 12 Phase 7 tests PASSED** on 2026-11-10 using the refreshed UPM package and the corrected hierarchy test (action `5be3bb8c8c20`, run `58d6361f-d8ec-4086-a42c-fd66d9bd12ea`, 3.44s, zero failed/skipped/inconclusive). **Cumulative automated result: 120/120** (107 EditMode + 13 PlayMode). Unity Editor tests alone do not certify an end-to-end external MCP client, Windows companion process survival, ngrok reconnection or player builds.
 
+### Windows Companion and ngrok transport validation (in progress)
+
+The **120/120 Unity automated regression tests remain verified**. A separate short live ChatGPT-to-Unity read-only burst passed **12/12 MCP calls** (401–1096 ms per call, 626 ms mean) with stable Companion PID, ngrok reporting Ready, and an unchanged five-root gameplay scene. This does **not** certify restart, reconnect, or HTTPS public-tunnel behavior.
+
+A targeted PowerShell reliability patch in `Companion~/wdmcp-companion.ps1` replaces the prior delete-then-move JSON writer with atomic `File.Replace`/`File.Move` and bounded retries. The offline PowerShell regression and the new `Tests~/test-companion-stability.ps1` local/ngrok/restart observer **still require execution on Windows after a Git UPM refresh and Companion restart**. The script never prints private endpoints or performs automatic restarts.
+
+See [the Windows/ngrok stability validation plan](Documentation~/STABILITY_VALIDATION.md) for commands, manual approval points and acceptance criteria.
+
 ### Verification on your Windows workstation
 
 Run the PowerShell regression tests from the package root:
