@@ -14,7 +14,7 @@ using TMPro;
 
 namespace WasimDevelopment.UnityMcpBridge.Tests
 {
-    public sealed class BridgeIntegrationTests
+    public sealed partial class BridgeIntegrationTests
     {
         private string _folder, _scenePath;
         private GameObject _root;
