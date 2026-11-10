@@ -1,7 +1,7 @@
 # MCP2UNITY — Unity uGUI tools (Phases 1–4)
 
 > Target: Unity 2022.3 with com.unity.ugui 1.0.0 and com.unity.textmeshpro 3.0.7.
-> Unity 2022.3.62f3 confirmed 73/73 Phase 1–3 EditMode tests passed. The separate 13-test Phase 4 PlayMode suite is a new candidate and still requires Unity execution after UPM refresh.
+> Unity 2022.3.62f3 confirmed 73/73 Phase 1–3 EditMode tests passed. The 13-test Phase 4 PlayMode suite passed **13/13** after UPM refresh on 2026-11-10 in Unity 2022.3.62f3 (total **86/86** with 73 EditMode tests).
 
 ## Workflow
 
@@ -184,8 +184,8 @@ The Undo system and pre-change scene backup cover the action. Old scene-file rol
 22 new EditMode tests target catalog/destructive permissions, four control hierarchies and configuration, invalid input rejection, ScrollView child parenting, advanced hierarchy inspection, deletion guards and rollback, and a safe Button onClick persistent listener. All **73/73 Phase 1–3 EditMode tests passed** in the Unity 2022.3.62f3 MuOnBaAr project on 10 November 2026.
 
 
-## Phase 4 — runtime PlayMode interaction testing (candidate)
+## Phase 4 — runtime PlayMode interaction testing (verified)
 
 The package contains a **separate** `Tests/PlayMode/WasimUnityMcpBridge.PlayMode.Tests.asmdef` plus 13 `[UnityTest]` methods in `UiRuntimePlayModeTests.cs`. PlayMode fixtures create a temporary `Canvas` and `EventSystem` and tear both down without saving scene assets. Tests cover Button pointer-click and active-state callbacks, disabled button behavior, GraphicRaycaster hits, Slider event/range/whole-number and silent updates, Toggle pointer-click/disabled state, InputField value-change/character-limit and silent updates, and ScrollRect vertical normalized motion/pointer drag.
 
-The editor-side Toggle factory now includes a transparent full-row `Image` with `raycastTarget=true` so text-label area is clickable, not only the checkmark; an existing EditMode test asserts this. The runtime fixture checks the standard Unity pointer-event contract. These tests **do not create UI through MCP directly**, and cannot substitute for a future end-to-end PlayMode check of MCP-created serialized events. Use reviewed `unity_propose_editor_action` with `action=runTests`, `testMode=PlayMode`, `testNames` matching `WasimDevelopment.UnityMcpBridge.Tests.UiRuntimePlayModeTests.*`; approve only in Unity. Expected count: **13 tests**, not yet verified in the updated UPM installation.
+The editor-side Toggle factory now includes a transparent full-row `Image` with `raycastTarget=true` so text-label area is clickable, not only the checkmark; an existing EditMode test asserts this. The runtime fixture checks the standard Unity pointer-event contract. These tests **do not create UI through MCP directly**, and cannot substitute for a future end-to-end PlayMode check of MCP-created serialized events. Use reviewed `unity_propose_editor_action` with `action=runTests`, `testMode=PlayMode`, `testNames` matching `WasimDevelopment.UnityMcpBridge.Tests.UiRuntimePlayModeTests.*`; approve only in Unity. **Verified: 13/13 tests passed** in Unity 2022.3.62f3 (action `f197a999ff82`, run `9fd24057-5d0d-4cc2-9faf-78b657501b4f`, 2026-11-10), 0 failed/skipped/inconclusive. Compilation and Console were clean. End-to-end MCP-created UI PlayMode interaction remains unverified.
