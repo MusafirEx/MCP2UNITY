@@ -82,6 +82,8 @@ The **120/120 Unity automated regression tests remain verified**. A separate sho
 
 A targeted PowerShell reliability patch in `Companion~/wdmcp-companion.ps1` replaces the prior delete-then-move JSON writer with atomic `File.Replace`/`File.Move` and bounded retries. The **offline PowerShell function regression has now passed on Windows** (all reported assertions, including 18 held-reader JSON replacements, cleanup, JSON `null` and image responses, and heartbeat recovery). The new `Tests~/test-companion-stability.ps1` local/ngrok/restart observer **still requires live execution** after the updated package is loaded and the Companion restarted. The script never prints private endpoints or performs automatic restarts.
 
+**Direct Windows transport soak now PASSED:** 12/12 local MCP handshakes (mean 290 ms, maximum 352 ms), actual public HTTPS ngrok MCP handshake (47 tools), and zero observed status-read recoveries/retries in that run. Prior transient status-file failures are documented; manual Companion restart/reconnect remains pending.
+
 See [the Windows/ngrok stability validation plan](Documentation~/STABILITY_VALIDATION.md) for commands, manual approval points and acceptance criteria.
 
 ### Verification on your Windows workstation
