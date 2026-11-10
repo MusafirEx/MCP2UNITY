@@ -32,8 +32,32 @@ function Write-TextAtomic([string]$Path, [string]$Text) {
     if (-not [string]::IsNullOrWhiteSpace($directory)) { [System.IO.Directory]::CreateDirectory($directory) | Out-Null }
     $temporary = $Path + '.tmp-' + [Guid]::NewGuid().ToString('N')
     [System.IO.File]::WriteAllText($temporary, $Text, $Utf8NoBom)
-    if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue }
-    Move-Item -LiteralPath $temporary -Destination $Path -Force
+    try {
+        for ($attempt = 0; $attempt -lt 4; $attempt++) {
+            try {
+                # Readers share Delete. Replace atomically without first removing
+                # a live heartbeat or response file (which creates a missing-file gap).
+                if ([System.IO.File]::Exists($Path)) {
+                    [System.IO.File]::Replace($temporary, $Path, $null)
+                } else {
+                    [System.IO.File]::Move($temporary, $Path)
+                }
+                return
+            } catch [System.IO.IOException] {
+                if ($attempt -ge 3) { throw }
+                Start-Sleep -Milliseconds (10 * ($attempt + 1))
+            } catch [System.UnauthorizedAccessException] {
+                if ($attempt -ge 3) { throw }
+                Start-Sleep -Milliseconds (10 * ($attempt + 1))
+            }
+        }
+    } finally {
+        # On failure leave the previous destination untouched, and remove only
+        # the unpublished temporary file. Never expose a half-written JSON file.
+        if ([System.IO.File]::Exists($temporary)) {
+            try { [System.IO.File]::Delete($temporary) } catch { }
+        }
+    }
 }
 
 function Write-JsonAtomic([string]$Path, $Value) {
