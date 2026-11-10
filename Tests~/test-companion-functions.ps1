@@ -83,6 +83,7 @@ try {
         }
     } finally { $sharedReader.Dispose() }
     Assert-True (-not (Get-ChildItem -LiteralPath $folder -Filter 'rewrite.json.tmp-*')) 'Atomic writer cleans unpublished temp files'
+    Assert-True (-not (Get-ChildItem -LiteralPath $folder -Filter 'rewrite.json.bak-*')) 'Atomic writer cleans replacement backup files'
 
     # Offline heartbeat checks do not touch the live Unity queue.
     Write-JsonAtomic $Config.unityStatusPath ([ordered]@{timestampUtc=[DateTime]::UtcNow.AddSeconds(-30).ToString('O')})
