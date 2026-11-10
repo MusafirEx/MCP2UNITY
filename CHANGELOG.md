@@ -1,3 +1,11 @@
+## Windows Companion / ngrok reliability validation (in progress, after Phase 7)
+
+- Verified a short **12/12** live read-only MCP burst through the connected ChatGPT → Windows Companion → Unity bridge on 2026-11-10: 401–1096 ms per call, 626 ms mean, unchanged Companion PID, ngrok reported `Ready`, and preserved five original scene roots.
+- Changed `Companion~/wdmcp-companion.ps1` to atomically replace existing JSON files using `File.Replace`, with `File.Move` for first publication and bounded retries. Removes the former delete-then-move gap where readers could see no status file.
+- Extended `Tests~/test-companion-functions.ps1` with a live-reader atomic-replacement regression and stale heartbeat check; introduced `Tests~/test-companion-stability.ps1` for read-only local/public JSON-RPC soak and optional **user-initiated** restart observation.
+- Added `Documentation~/STABILITY_VALIDATION.md` with Windows/manual test instructions and transport acceptance criteria.
+- **Windows verification pending** for the patched PowerShell implementation, external HTTPS ngrok round trip, Companion restart and reload recovery. The preceding **120/120 Unity tests remain verified for the earlier installed companion version**; this transport patch does not change the 47-tool catalog or Editor UI code.
+
 # Changelog
 
 ## Phase 7 — final 47-tool contract and read-only regressions (verified 2026-11-10)
