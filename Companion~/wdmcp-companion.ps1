@@ -30,15 +30,20 @@ function Read-JsonFile([string]$Path) {
 function Write-TextAtomic([string]$Path, [string]$Text) {
     $directory = [System.IO.Path]::GetDirectoryName($Path)
     if (-not [string]::IsNullOrWhiteSpace($directory)) { [System.IO.Directory]::CreateDirectory($directory) | Out-Null }
-    $temporary = $Path + '.tmp-' + [Guid]::NewGuid().ToString('N')
+    $nonce = [Guid]::NewGuid().ToString('N')
+    $temporary = $Path + '.tmp-' + $nonce
+    # Windows PowerShell 5.1 can bind $null to an empty string when calling
+    # File.Replace(string, string, string), causing "path is not of a legal form".
+    # A unique, valid backup path also preserves the previous file during replace.
+    $backup = $Path + '.bak-' + $nonce
     [System.IO.File]::WriteAllText($temporary, $Text, $Utf8NoBom)
     try {
         for ($attempt = 0; $attempt -lt 4; $attempt++) {
             try {
-                # Readers share Delete. Replace atomically without first removing
-                # a live heartbeat or response file (which creates a missing-file gap).
+                # Readers share Delete. Replace atomically, never delete the
+                # published heartbeat/response before a replacement is ready.
                 if ([System.IO.File]::Exists($Path)) {
-                    [System.IO.File]::Replace($temporary, $Path, $null)
+                    [System.IO.File]::Replace($temporary, $Path, $backup)
                 } else {
                     [System.IO.File]::Move($temporary, $Path)
                 }
@@ -52,10 +57,13 @@ function Write-TextAtomic([string]$Path, [string]$Text) {
             }
         }
     } finally {
-        # On failure leave the previous destination untouched, and remove only
-        # the unpublished temporary file. Never expose a half-written JSON file.
+        # On failed publish leave the previous destination untouched. Remove
+        # only temporary/backup files belonging to this specific invocation.
         if ([System.IO.File]::Exists($temporary)) {
             try { [System.IO.File]::Delete($temporary) } catch { }
+        }
+        if ([System.IO.File]::Exists($backup)) {
+            try { [System.IO.File]::Delete($backup) } catch { }
         }
     }
 }
