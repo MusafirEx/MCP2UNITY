@@ -156,7 +156,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     // (including the user's open scene) already contains one.
                     if ((op["createEventSystem"]?.Value<bool>() ?? true) &&
                         !scene.GetRootGameObjects().Any(root =>
-                            root.GetComponent<EventSystem>() != null))
+                            root.GetComponentInChildren<EventSystem>(true) != null))
                     {
                         var events = new GameObject("EventSystem");
                         Undo.RegisterCreatedObjectUndo(events, "Create UI EventSystem");
