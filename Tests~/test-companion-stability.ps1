@@ -145,19 +145,29 @@ if ($ObserveRestart) {
     Write-Host 'Restart observation armed. In Unity MCP Bridge click Restart Companion (or Stop then Start).'
     Write-Host ('This script observes for ' + $RestartWindowSeconds + ' seconds; it does not trigger a restart.')
     $deadline = [DateTime]::UtcNow.AddSeconds($RestartWindowSeconds)
+    $observedPid = 0
     $restarted = $null
     while ([DateTime]::UtcNow -lt $deadline) {
         try {
             $candidate = Read-SharedJson $companionStatus
-            if ([string]$candidate.state -eq 'Running' -and [int]$candidate.processId -gt 0 -and [int]$candidate.processId -ne [int]$initial.processId) {
-                $restarted = $candidate
-                break
+            if ([int]$candidate.processId -gt 0 -and
+                [int]$candidate.processId -ne [int]$initial.processId) {
+                $observedPid = [int]$candidate.processId
+                # A new process can write Running before it finishes starting
+                # its ngrok tunnel. Wait for complete readiness, not merely PID.
+                if ([string]$candidate.state -eq 'Running' -and
+                    (-not $TestPublicTunnel -or
+                     ([string]$candidate.ngrokState -like 'Ready*' -and
+                      -not [string]::IsNullOrWhiteSpace([string]$candidate.mcpEndpoint)))) {
+                    $restarted = $candidate
+                    break
+                }
             }
         } catch { }
         Start-Sleep -Seconds 1
     }
-    Assert-State ($null -ne $restarted) 'New Companion PID not observed before deadline'
-    Start-Sleep -Seconds 2
+    Assert-State ($observedPid -gt 0) 'New Companion PID not observed before deadline'
+    Assert-State ($null -ne $restarted) 'New Companion never reached Running/ngrok readiness before deadline'
     Assert-Heartbeat
     $verified = Test-RoundTrip ([string]$restarted.localEndpoint) 'post-restart'
     Write-Host ('PASS post-restart local MCP: ' + $verified.ToolCount + ' tools; PID changed')
