@@ -68,6 +68,10 @@ Write tools only propose locally reviewed changes, so the Unity Review window mu
 
 See [Unity uGUI MCP tools](Documentation~/UNITY_UI_TOOLS.md) for schemas and test scope. UI Toolkit/UXML, arbitrary runtime callback method bindings, and advanced Button events beyond allowlisted SetActive(bool) are **not supported**. All 73 Phase 1–3 EditMode tests passed in Unity 2022.3.62f3, and the direct Canvas/Panel/Button/Styling/Layout MCP integration test succeeded. Phase 4 adds 13 separate PlayMode tests of actual UI event dispatch and input behavior. All **13/13 PlayMode tests passed** through the reviewed Unity Test Runner action on 2026-11-10; PlayMode fixture tests do not by themselves demonstrate serialized MCP event persistence or clicks in every target game scene. The rollback guard correctly blocked an unsafe restore when scene files diverged; temporary UI was removed manually, and the original five root objects were verified.
 
+### Phase 6 — security and recovery test candidate
+
+`Tests/Editor/SafetyRecoveryIntegrationTests.cs` adds **12 new EditMode safety regressions** covering path constraints, stale/deferred scene write protection, deletion hierarchy guards, rollback divergence, and interrupted IPC request handling. These tests are **not yet executed in Unity**. After refreshing UPM from `main`, the target total is **108/108** automated tests, compared with the last verified **96/96**. Live Phase 5 Hide/Show Game View clicks separately passed and are not included in this automated count.
+
 ### Verification on your Windows workstation
 
 Run the PowerShell regression tests from the package root:
