@@ -69,5 +69,26 @@ try {
     Write-TextAtomic $path '{"version":1}'
     Write-TextAtomic $path '{"version":2}'
     Assert-True ((Read-JsonFile $path).version -eq 2) 'Baseline file overwrite works without held reader'
+
+    # Keep a live reader open during repeated writes. File.Replace must publish
+    # complete JSON without removing the destination or breaking the held reader.
+    $sharedReader = [System.IO.FileStream]::new(
+        $path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read,
+        ([System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete))
+    try {
+        for ($i = 3; $i -le 20; $i++) {
+            Write-TextAtomic $path ('{"version":' + $i + '}')
+            Assert-True ([System.IO.File]::Exists($path)) ('Atomic replace retains destination on write ' + $i)
+            Assert-True ((Read-JsonFile $path).version -eq $i) ('Concurrent reader and complete JSON write ' + $i)
+        }
+    } finally { $sharedReader.Dispose() }
+    Assert-True (-not (Get-ChildItem -LiteralPath $folder -Filter 'rewrite.json.tmp-*')) 'Atomic writer cleans unpublished temp files'
+
+    # Offline heartbeat checks do not touch the live Unity queue.
+    Write-JsonAtomic $Config.unityStatusPath ([ordered]@{timestampUtc=[DateTime]::UtcNow.AddSeconds(-30).ToString('O')})
+    Assert-True (-not (Get-UnityAvailability)) 'Stale Unity heartbeat rejected'
+    Write-JsonAtomic $Config.unityStatusPath ([ordered]@{timestampUtc=[DateTime]::UtcNow.ToString('O')})
+    Assert-True (Get-UnityAvailability) 'Fresh heartbeat restored after stale state'
+
     Write-Host 'Companion function tests passed. Use Documentation~/test-mcp.ps1 for a real Unity round trip.'
 } finally { Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue }
