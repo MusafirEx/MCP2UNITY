@@ -1,5 +1,12 @@
 # Changelog
 
+## Phase 6 — safety guards and recovery (candidate, 12 new EditMode tests)
+
+- Added `Tests/Editor/SafetyRecoveryIntegrationTests.cs` with 12 isolated EditMode tests for path traversal and write-root rejection, transient instance IDs, protected script identity, duplicate aliases, 50-operation limits, unsaved scene guard, inactive descendant deletion cap, parent/subtree drift, rollback protection when scene files change, and interrupted MCP IPC request recovery without replay.
+- All tests reuse the disposable Unity test fixture and never manipulate the user's gameplay scene. The recovery fixture writes only inside a new isolated `Library/McpPhase6Recovery_*` directory and deletes it afterward.
+- **Unverified candidate:** the source is committed on `main`, but Unity UPM refresh, compilation, and test approval are still required. The last verified automated result remains **96/96** through Phase 5. Phase 6 target is **108/108**. Phase 5 temporary EventSystem deletion is pending local approval.
+
+
 
 ## Phase 5 — MCP UI serialization and end-to-end verification (test candidate)
 
