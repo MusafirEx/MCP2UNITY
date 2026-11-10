@@ -19,15 +19,54 @@ $statusRoot = Join-Path $ProjectRoot 'Library\WasimUnityMcpBridge\Companion'
 $companionStatus = Join-Path $statusRoot 'companion-status.json'
 $unityStatus = Join-Path $statusRoot 'unity-status.json'
 $script:seq = 0
+$script:StatusReadRecoveryCount = 0
+$script:StatusReadRetryAttempts = 0
 
 function Read-SharedJson([string]$Path) {
-    if (-not [System.IO.File]::Exists($Path)) { throw ('Missing file: ' + [System.IO.Path]::GetFileName($Path)) }
-    $stream = [System.IO.FileStream]::new($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, ([System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete))
-    try {
-        $reader = [System.IO.StreamReader]::new($stream, [System.Text.Encoding]::UTF8, $true)
-        try { $json = $reader.ReadToEnd() } finally { $reader.Dispose() }
-    } finally { $stream.Dispose() }
-    return ($json | ConvertFrom-Json)
+    # File.Exists followed by FileStream.Open is a TOCTOU race during Windows
+    # replacement. Open directly, retry bounded transient file visibility/sharing
+    # failures, and record every recovered read (never use stale cached status).
+    $name = [System.IO.Path]::GetFileName($Path)
+    $deadline = [DateTime]::UtcNow.AddMilliseconds(2000)
+    $attempts = 0
+    while ($true) {
+        $stream = $null
+        try {
+            $stream = [System.IO.FileStream]::new(
+                $Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read,
+                ([System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete))
+            $reader = [System.IO.StreamReader]::new($stream, [System.Text.Encoding]::UTF8, $true)
+            try { $json = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            if ([string]::IsNullOrWhiteSpace($json)) {
+                throw [System.IO.IOException]::new('Status file was empty during update.')
+            }
+            # Malformed JSON is a hard error, not a transient missing-file pass.
+            $status = ConvertFrom-Json -InputObject $json -ErrorAction Stop
+            if ($attempts -gt 0) {
+                $script:StatusReadRecoveryCount++
+                $script:StatusReadRetryAttempts += $attempts
+                Write-Warning ('Recovered temporary status read of ' + $name +
+                    ' after ' + $attempts + ' retries.')
+            }
+            return $status
+        } catch [System.IO.IOException] {
+            if ([DateTime]::UtcNow -ge $deadline) {
+                throw ('Status file ' + $name + ' remained unavailable after 2 seconds (' +
+                    $attempts + ' retries): ' + $_.Exception.GetType().Name)
+            }
+            $attempts++
+            Start-Sleep -Milliseconds 25
+        } catch [System.UnauthorizedAccessException] {
+            if ([DateTime]::UtcNow -ge $deadline) {
+                throw ('Status file ' + $name + ' remained inaccessible after 2 seconds (' +
+                    $attempts + ' retries): ' + $_.Exception.GetType().Name)
+            }
+            $attempts++
+            Start-Sleep -Milliseconds 25
+        } finally {
+            if ($null -ne $stream) { $stream.Dispose() }
+        }
+    }
 }
 
 function Assert-State([bool]$Check, [string]$Message) {
@@ -129,4 +168,9 @@ if ($ObserveRestart) {
     }
 }
 
+Write-Host ('Status-file read recoveries: ' + $script:StatusReadRecoveryCount +
+    ' (retry attempts: ' + $script:StatusReadRetryAttempts + ')')
+if ($script:StatusReadRecoveryCount -gt 0) {
+    Write-Warning 'MCP connectivity passed but status-file visibility had transient interruptions. Investigate if repeated.'
+}
 Write-Host 'PASS MCP2UNITY stability smoke complete. Private endpoint and token were not logged.'
