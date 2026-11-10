@@ -278,7 +278,12 @@ function Invoke-UnityTool([string]$Name, $Arguments) {
                     if ($null -ne $response.mcpContent) {
                         return [ordered]@{content=@($response.mcpContent);isError=$false}
                     }
-                    $text = ConvertTo-Json -InputObject $response.result -Depth 100 -Compress
+                    # Windows PowerShell 5.1 does not reliably bind a $null
+                    # -InputObject to ConvertTo-Json. MCP text must always be a
+                    # valid JSON string, including the literal JSON null token.
+                    $text = if ($null -eq $response.result) { 'null' } else {
+                        ConvertTo-Json -InputObject $response.result -Depth 100 -Compress
+                    }
                     return [ordered]@{ content=@([ordered]@{type='text';text=[string]$text}); isError=$false }
                 }
                 return New-ToolError ('Unity tool failed: ' + [string]$response.error)
