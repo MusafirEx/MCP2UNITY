@@ -78,7 +78,7 @@ See [Unity uGUI MCP tools](Documentation~/UNITY_UI_TOOLS.md) for schemas and tes
 
 ### Windows Companion and ngrok transport validation (in progress)
 
-The **120/120 Unity automated regression tests remain verified**. A separate short live ChatGPT-to-Unity read-only burst passed **12/12 MCP calls** (401–1096 ms per call, 626 ms mean) with stable Companion PID, ngrok reporting Ready, and an unchanged five-root gameplay scene. This does **not** certify restart, reconnect, or HTTPS public-tunnel behavior.
+The **120/120 Unity automated regression tests remain verified**. A separate short live ChatGPT-to-Unity read-only burst passed **12/12 MCP calls** (401–1096 ms per call, 626 ms mean) with stable Companion PID, ngrok reporting Ready, and an unchanged five-root gameplay scene. A reviewed Unity Editor script compile/domain reload was also verified (`27efd2959d84`): Editor.log confirms the reload and the running Companion retained PID 20996, ngrok reported `Ready`, and Unity IPC resumed. This does **not** certify a Companion restart, an HTTP round trip through public ngrok, or adoption of the updated PowerShell script.
 
 A targeted PowerShell reliability patch in `Companion~/wdmcp-companion.ps1` replaces the prior delete-then-move JSON writer with atomic `File.Replace`/`File.Move` and bounded retries. The offline PowerShell regression and the new `Tests~/test-companion-stability.ps1` local/ngrok/restart observer **still require execution on Windows after a Git UPM refresh and Companion restart**. The script never prints private endpoints or performs automatic restarts.
 
