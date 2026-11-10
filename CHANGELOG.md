@@ -1,5 +1,12 @@
 # Changelog
 
+## Phase 7 — final 47-tool contract and read-only regressions (candidate)
+
+- Added `Tests/Editor/FinalContractIntegrationTests.cs` plus Unity `.meta`, providing **12 EditMode tests** covering exact/unique 47-tool catalog, strict JSON object schemas, declared required fields, numeric bound consistency, legacy/backport/uGUI names, read-only versus review-required safety annotations, live `unity_get_status` tool enumeration, read-only `unity_get_project_info`, scene hierarchy caps, bounded runtime inspection, package script reader response/hash/line bounds, and invalid tool-input rejection.
+- The tests reuse the existing isolated additive scene fixture. They are designed not to modify the user's gameplay scene or approve any remote project changes.
+- **Candidate, not yet verified by Unity**. The last confirmed automated result remains **108/108** through Phase 6. Target after Phase 7: **120/120**. UPM refresh, compile and local Unity Test Runner approval are required.
+
+
 ## Phase 6 — safety guards and recovery (verified 2026-11-10)
 
 - Added `Tests/Editor/SafetyRecoveryIntegrationTests.cs` with 12 isolated EditMode tests for path traversal and write-root rejection, transient instance IDs, protected script identity, duplicate aliases, 50-operation limits, unsaved scene guard, inactive descendant deletion cap, parent/subtree drift, rollback protection when scene files change, and interrupted MCP IPC request recovery without replay.
