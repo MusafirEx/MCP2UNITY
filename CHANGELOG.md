@@ -1,3 +1,7 @@
+## PR #4 EventSystem additive-scene fix — Unity EditMode verification (2026-11-10)
+
+- **PASSED 160/160 EditMode tests** on connected MuOnBaAr Unity Editor 2022.3.62f3 after merge of PR #4 (`73915c1a5b8bd63c0c7ce335402fabff429f01ea`). Approved editor action `c0a81ff40d63`, Unity run `5b773961-ca55-4f11-b41f-ad69b1ce4a21`: **160 passed, 0 failed, 0 skipped, 0 inconclusive**, 55.2085724 seconds. The previously failing `BridgeIntegrationTests.UiCanvasCreatesRectScalerGraphicRaycasterAndEventSystem` now passes. Console contained no errors; active MuOnBaArPrototype scene remained saved/clean with seven root objects including HUD Canvas and EventSystem. No pending Change Sets.
+
 
 - **First direct Windows MCP/ngrok soak (partial, 2026-11-10):** local JSON-RPC initialization and public ngrok HTTPS initialization passed with all 47 tools. The local loop passed 10/12 iterations, then failed reading `companion-status.json` on iteration 11. A following live check found the original Companion PID `20996` still running, ngrok `Ready`, Unity IPC connected and gameplay scene unchanged. Likely old running delete/move writer, not patched process: **no 12/12 stability claim**. Require a locally verified Companion restart (new PID) and repeat the full soak.
 
