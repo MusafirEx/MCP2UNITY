@@ -4,7 +4,8 @@
 - Changed `Companion~/wdmcp-companion.ps1` to atomically replace existing JSON files using `File.Replace`, with `File.Move` for first publication and bounded retries. Removes the former delete-then-move gap where readers could see no status file.
 - Extended `Tests~/test-companion-functions.ps1` with a live-reader atomic-replacement regression and stale heartbeat check; introduced `Tests~/test-companion-stability.ps1` for read-only local/public JSON-RPC soak and optional **user-initiated** restart observation.
 - Added `Documentation~/STABILITY_VALIDATION.md` with Windows/manual test instructions and transport acceptance criteria.
-- **Windows verification pending** for the patched PowerShell implementation, external HTTPS ngrok round trip, Companion restart and reload recovery. The preceding **120/120 Unity tests remain verified for the earlier installed companion version**; this transport patch does not change the 47-tool catalog or Editor UI code.
+- **Unity Editor domain reload PASSED on 2026-11-10:** action `27efd2959d84` was accepted; Editor.log confirms `Requested through public api`, a successful Tundra build and MonoManager ReloadAssembly. Companion PID remained `20996` with ngrok `Ready`, Unity IPC connected, all 47 tools available, and five original scene roots intact. This validates survival of an Editor reload for the *previously running Companion process*.
+- **Windows verification still pending** for the newly patched PowerShell executable, external HTTPS ngrok round trip and post-patch Companion restart. The preceding **120/120 Unity tests remain verified**; this transport patch does not change the 47-tool catalog or Editor UI code.
 
 # Changelog
 
