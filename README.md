@@ -72,6 +72,10 @@ See [Unity uGUI MCP tools](Documentation~/UNITY_UI_TOOLS.md) for schemas and tes
 
 `Tests/Editor/SafetyRecoveryIntegrationTests.cs` adds **12 new EditMode safety regressions** covering path constraints, stale/deferred scene write protection, deletion hierarchy guards, rollback divergence, and interrupted IPC request handling. **All 12/12 passed** on 2026-11-10 in Unity 2022.3.62f3, action `abef18ce2b4b`, run `4bfd294e-6c1e-48a6-9a34-839891d3c8bd` (4.28s; no failed, skipped or inconclusive tests). **Cumulative verified result: 108/108** automated tests (95 EditMode + 13 PlayMode). Live Phase 5 Hide/Show Game View clicks separately passed and are not included in this automated count.
 
+### Phase 7 — final MCP contract suite (candidate)
+
+`Tests/Editor/FinalContractIntegrationTests.cs` adds **12 EditMode tests** for the 47-tool catalog, schema strictness and bounds, permission hints, stable read-only MCP responses, and invalid-input rejection. The Phase 7 tests have **not yet been run in Unity**. Refresh the Git UPM package from `main`, then locally approve the reviewed Unity Test Runner request. The **last verified total is 108/108**; the **target is 120/120** once Phase 7 passes. Unity Editor tests alone do not certify an end-to-end external MCP client, Windows companion process survival, ngrok reconnection or player builds.
+
 ### Verification on your Windows workstation
 
 Run the PowerShell regression tests from the package root:
