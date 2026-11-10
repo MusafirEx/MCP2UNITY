@@ -1,12 +1,12 @@
 # Changelog
 
-## Phase 4 — Unity uGUI PlayMode tests (candidate)
+## Phase 4 — Unity uGUI PlayMode tests (verified 2026-11-10)
 
 - Added a separate PlayMode test assembly with 13 runtime interaction tests covering Button, Slider, Toggle, InputField, ScrollRect, and GraphicRaycaster input.
 - PlayMode test fixtures use disposable Canvas/EventSystem objects and avoid saving gameplay scene changes.
 - Made generated Toggle root UI image transparently raycastable across its entire row, including label area, and extended an existing EditMode assertion.
 - Baseline before Phase 4: **73/73 EditMode tests passed** in live Unity 2022.3.62f3, with 47 MCP tools advertised.
-- The 13 PlayMode tests remain **unverified** until updated UPM compilation and runtime execution.
+- **Verified 13/13 PlayMode tests passed** in Unity 2022.3.62f3 on 2026-11-10 (Unity MCP Editor action `f197a999ff82`, run `9fd24057-5d0d-4cc2-9faf-78b657501b4f`). 0 failed/skipped/inconclusive; compilation and Console reported no errors/warnings. Combined automated count: **86/86** (73 EditMode + 13 PlayMode). These fixture tests are not a substitute for end-to-end PlayMode testing of persistent events on MCP-created UI.
 
 ## 0.5.2 (MCP2UNITY experimental rebuild)
 
