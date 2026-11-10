@@ -2,6 +2,8 @@
 
 **Version: 0.5.2 (experimental backport)** | **Unity: 2022.3 LTS (validated on 2022.3.62f3)** | **Windows PowerShell companion**
 
+> **Latest validation (2026-11-10, PR #4):** Unity EditMode suite **160/160 passed** (0 failed, skipped or inconclusive; 55.21 seconds) after the target-scene EventSystem fix merged into `main`. Reviewed action `c0a81ff40d63`; no console errors, scene saved/clean. See [CHANGELOG](CHANGELOG.md).
+
 MCP2UNITY restarts the original Wasim Unity MCP Bridge from its **v0.5.1** source instead of upgrading the transport to v0.6.0. The v0.5.1 standalone PowerShell companion and its Unity Editor file-IPC architecture are retained; 17 optional tools from v0.6.0 are backported into separate Editor modules. This rebuild has 21 original tool entries + 17 backported entries + 1 reviewed Transform tool + 8 uGUI tools = **47 advertised MCP tools**.
 
 > **Verification status:** All **73/73 EditMode tests (Phases 1–3)** passed in Unity 2022.3.62f3 with the connected MCP bridge advertising 47 tools and no reported compilation/Console errors. Canvas/Panel/Button/Styling/Layout creation was exercised end-to-end in the MuOnBaAr test scene, which was restored to five original root objects. **Phase 4 PlayMode interactions passed 13/13**, bringing the measured total to **120/120 Unity tests** (107 EditMode + 13 PlayMode) on 2026-11-10, including 10/10 Phase 5 UI serialization and persistence tests. Direct live MCP-created UI Hide/Show interaction was also verified in Game View (target `activeSelf` changed false/true) and the temporary Canvas/EventSystem were removed; the original five scene roots were verified. Unity compilation and Console were clean after UPM update. No standalone Windows companion/player-build certification is implied.
