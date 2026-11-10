@@ -1,5 +1,13 @@
 # Changelog
 
+
+## Phase 5 — MCP UI serialization and end-to-end verification (test candidate)
+
+- Added **10 EditMode integration tests** in `Tests/Editor/UiPersistenceIntegrationTests.cs` (as a partial of `BridgeIntegrationTests`). They exercise MCP dispatcher Canvas/Button creation, atomic alias hierarchy creation, persistent Button SetActive listener preservation in saved prefabs and reopened disposable scenes, post-reload inspector output, and persisted layout/text/Slider/Toggle/InputField/ScrollRect settings.
+- The tests create and remove their **own temporary additive scene** and project assets. They do not require changes to the user's gameplay scene.
+- **Not yet verified**: Unity UPM must refresh from `main`, compile the new test source, and run all 10 new EditMode cases. 86/86 remains the last measured result, not 96/96.
+- A separate *live MCP-created UI* review/test is required for actual in-Game-View pointer interaction and serialized onClick event behavior, beyond test fixture assertions.
+
 ## Phase 4 — Unity uGUI PlayMode tests (verified 2026-11-10)
 
 - Added a separate PlayMode test assembly with 13 runtime interaction tests covering Button, Slider, Toggle, InputField, ScrollRect, and GraphicRaycaster input.
