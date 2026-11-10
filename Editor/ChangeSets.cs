@@ -405,6 +405,9 @@ namespace WasimDevelopment.UnityMcpBridge
                 Object target = ObjectAccess.Resolve((string)op["targetId"], aliases);
                 GameObject go = ObjectAccess.GameObjectOf(target);
                 if (go == null || EditorUtility.IsPersistent(target)) throw new InvalidOperationException("Target must be in a scene.");
+                // Preserve the Scene handle before an approved deletion destroys the GameObject.
+                // Do not dereference go.scene after Undo.DestroyObjectImmediate(go).
+                Scene affectedScene = go.scene;
                 if (kind == "add_component")
                 {
                     Type type = ComponentType((string)op["componentType"]);
@@ -456,7 +459,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     CopyProxy(target);
                     PrefabUtility.RecordPrefabInstancePropertyModifications(target);
                 }
-                EditorSceneManager.MarkSceneDirty(go.scene);
+                EditorSceneManager.MarkSceneDirty(affectedScene);
             }
             string alias = (string)op["alias"];
             if (alias != null && created != null) aliases.Add(alias, created);
