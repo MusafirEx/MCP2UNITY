@@ -64,6 +64,12 @@ Save scenes and confirm no pending Change Sets. Trigger a normal Editor domain r
 - The running process had the **same PID observed before the atomic-file patch**, so the patch may not yet have been adopted by the live Companion. Restart the Companion locally after UPM refresh, confirm a **new PID**, then repeat the exact smoke test. Do not suppress or classify a missing status file as a passing iteration.
 - Record separately the follow-up full soak result and post-restart HTTP/ngrok handshake. Do not infer public endpoint persistence from `Ready` alone.
 
+## Second direct transport soak — transient status visibility (2026-11-10)
+
+- A Windows rerun again passed direct **local MCP and public HTTPS ngrok JSON-RPC handshakes** with 47 tools. Four local iterations passed (293, 284, 311, 379 ms); reading `companion-status.json` at the following iteration failed with `Missing file`.
+- A subsequent independent connected MCP check showed Companion PID **24496** (changed from old PID 20996), ngrok `Ready`, 47 tools, Unity IPC connected, and the clean five-root scene. Therefore the explanation **cannot be limited to the original pre-restart Companion**. The intermittently missing status snapshot is not evidence of a sustained server outage.
+- `Tests~/test-companion-stability.ps1` was modified to **open status files directly** (no `File.Exists`-then-open check), retry only transient I/O or access failures for at most **2 seconds**, and report recovery counts and retry attempts. It uses no cached status, preserves PID/heartbeat checks, and still throws if a file never recovers, JSON is malformed, or connection tests fail. This is a robustness and diagnostics change, **not yet a verified root-cause fix**. A 12/12 Windows rerun is pending.
+
 ## Status and exit criteria
 
 | Test | Current evidence |
