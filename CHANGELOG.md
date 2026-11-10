@@ -5,7 +5,7 @@
 
 - Added **10 EditMode integration tests** in `Tests/Editor/UiPersistenceIntegrationTests.cs` (as a partial of `BridgeIntegrationTests`). They exercise MCP dispatcher Canvas/Button creation, atomic alias hierarchy creation, persistent Button SetActive listener preservation in saved prefabs and reopened disposable scenes, post-reload inspector output, and persisted layout/text/Slider/Toggle/InputField/ScrollRect settings.
 - The tests create and remove their **own temporary additive scene** and project assets. They do not require changes to the user's gameplay scene.
-- **Not yet verified**: Unity UPM must refresh from `main`, compile the new test source, and run all 10 new EditMode cases. 86/86 remains the last measured result, not 96/96.
+- **Verified 10/10 Phase 5 EditMode tests passed** in Unity 2022.3.62f3 on 2026-11-10, action `ccf630ce1fb8`, run `52a229fb-652d-45eb-99c6-2303e66e01e7` (0 failed/skipped/inconclusive, runtime 7.12 seconds). Combined measured result: **96/96** automated tests (73 earlier EditMode + 13 PlayMode + 10 Phase 5 EditMode).
 - A separate *live MCP-created UI* review/test is required for actual in-Game-View pointer interaction and serialized onClick event behavior, beyond test fixture assertions.
 
 ## Phase 4 — Unity uGUI PlayMode tests (verified 2026-11-10)
