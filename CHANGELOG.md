@@ -1,3 +1,8 @@
+## Wasim MCP Reviews — long JSON readability fix (2026-11-10)
+
+- Replaced the clipped `EditorGUILayout.TextArea` (formerly capped to 260 px) in `Editor/ChangeSetWindow.cs` with a **read-only, selectable, wrapped JSON preview in its own vertically scrollable area**. Each change set and Editor action retains its own scroll position; `Expand/Compact` adjusts viewport height. Full review JSON remains available through the **Copy complete review JSON** button. **Approve/Reject** retain fixed 92 px widths.
+- This is an **Editor GUI-only change**; project scenes, Unity actions, permissions and the 47-tool MCP transport are unchanged. **Unity UPM refresh and visual verification are pending.** Source commit `d49ba346bec8a0df5d6b48d61022ff86d2363891`.
+
 ## PR #4 EventSystem additive-scene fix — Unity EditMode verification (2026-11-10)
 
 - **PASSED 160/160 EditMode tests** on connected MuOnBaAr Unity Editor 2022.3.62f3 after merge of PR #4 (`73915c1a5b8bd63c0c7ce335402fabff429f01ea`). Approved editor action `c0a81ff40d63`, Unity run `5b773961-ca55-4f11-b41f-ad69b1ce4a21`: **160 passed, 0 failed, 0 skipped, 0 inconclusive**, 55.2085724 seconds. The previously failing `BridgeIntegrationTests.UiCanvasCreatesRectScalerGraphicRaycasterAndEventSystem` now passes. Console contained no errors; active MuOnBaArPrototype scene remained saved/clean with seven root objects including HUD Canvas and EventSystem. No pending Change Sets.
