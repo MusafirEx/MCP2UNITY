@@ -2,6 +2,8 @@
 
 ## Phase 7 — final 47-tool contract and read-only regressions (candidate)
 
+- **First live Phase 7 run (2026-11-10):** action `59deae170419`, run `a2ee98ef-f91d-4460-bd09-4f7296517e28`: **11 passed / 1 failed** (4.1278s, 0 skipped/inconclusive). The sole failure was a test-fixture assumption: `SceneManager.SetActiveScene(_root.scene)` returned false inside EditMode Test Runner. Corrected `Phase7SceneHierarchyOutputHonorsObjectAndDepthLimits` to inspect the already active scene read-only and assert object/depth bounds without scene switching or modifying gameplay; fix commit `95aee55d388f8c2ca58b9950c4d2bb7cfaa7f186`. Unity verification of the corrected suite remains pending; cumulative verified baseline stays **108/108**.
+
 - Added `Tests/Editor/FinalContractIntegrationTests.cs` plus Unity `.meta`, providing **12 EditMode tests** covering exact/unique 47-tool catalog, strict JSON object schemas, declared required fields, numeric bound consistency, legacy/backport/uGUI names, read-only versus review-required safety annotations, live `unity_get_status` tool enumeration, read-only `unity_get_project_info`, scene hierarchy caps, bounded runtime inspection, package script reader response/hash/line bounds, and invalid tool-input rejection.
 - The tests reuse the existing isolated additive scene fixture. They are designed not to modify the user's gameplay scene or approve any remote project changes.
 - **Candidate, not yet verified by Unity**. The last confirmed automated result remains **108/108** through Phase 6. Target after Phase 7: **120/120**. UPM refresh, compile and local Unity Test Runner approval are required.
