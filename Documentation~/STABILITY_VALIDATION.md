@@ -55,6 +55,15 @@ When the script says `Restart observation armed`, click **Restart Companion** in
 
 Save scenes and confirm no pending Change Sets. Trigger a normal Editor domain reload (e.g. a controlled UPM refresh), then repeat Procedure B after Unity finishes importing. Check that Companion remains available, interrupted operations are not silently replayed, and gameplay scene remains unchanged. A temporary MCP error during reload is expected; correct recovery is the criterion.
 
+## First direct transport soak on Windows — partial result (2026-11-10)
+
+- Local MCP JSON-RPC handshake **PASSED** with 47 tools and bridge v0.5.2.
+- Actual public ngrok HTTPS MCP JSON-RPC handshake **PASSED** with 47 tools.
+- Ten of twelve requested local soak iterations completed (measured iteration times: 356, 265, 364, 381, 256, 341, 366, 354, 277 and 270 ms). At iteration 11, the observer threw `Missing file: companion-status.json`; **the 12-iteration soak did not pass**.
+- A subsequent remote status/scene check succeeded; Windows Companion PID remained **20996**, ngrok reported `Ready`, Unity IPC connected and the scene remained clean with five original roots. This supports a transient status-file visibility gap rather than a confirmed lasting Companion crash.
+- The running process had the **same PID observed before the atomic-file patch**, so the patch may not yet have been adopted by the live Companion. Restart the Companion locally after UPM refresh, confirm a **new PID**, then repeat the exact smoke test. Do not suppress or classify a missing status file as a passing iteration.
+- Record separately the follow-up full soak result and post-restart HTTP/ngrok handshake. Do not infer public endpoint persistence from `Ready` alone.
+
 ## Status and exit criteria
 
 | Test | Current evidence |
