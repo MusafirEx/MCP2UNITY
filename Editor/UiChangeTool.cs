@@ -151,8 +151,12 @@ namespace WasimDevelopment.UnityMcpBridge
                         ? new Vector2(res["x"].Value<float>(), res["y"].Value<float>())
                         : new Vector2(1920, 1080);
                     Undo.AddComponent<GraphicRaycaster>(go);
+                    // A Canvas is created in a specific scene. Checking all loaded
+                    // scenes can skip this scene's EventSystem when another scene
+                    // (including the user's open scene) already contains one.
                     if ((op["createEventSystem"]?.Value<bool>() ?? true) &&
-                        UnityEngine.Object.FindObjectOfType<EventSystem>() == null)
+                        !scene.GetRootGameObjects().Any(root =>
+                            root.GetComponent<EventSystem>() != null))
                     {
                         var events = new GameObject("EventSystem");
                         Undo.RegisterCreatedObjectUndo(events, "Create UI EventSystem");
