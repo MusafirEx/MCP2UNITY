@@ -1,5 +1,7 @@
 ## Windows Companion / ngrok reliability validation (in progress, after Phase 7)
 
+- **PowerShell 5.1 null-response regression fixed (pending Windows rerun):** a live execution of `Tests~/test-companion-functions.ps1` passed heartbeat and `[]`, object-array and numeric-array response checks, then failed on the JSON `null` case. The Companion now emits the literal JSON string `null` when IPC `result` is null rather than passing `$null` to `ConvertTo-Json -InputObject`; the test now identifies the failing shape explicitly. Commits `1b6eb391c5c90bb7ad5b7f4cf648f67adc101e97` and `3c84dce3de71c572dda1eb48a0c09e0ce47a8360`. Await user Windows PowerShell rerun before declaring this regression passed.
+
 - Verified a short **12/12** live read-only MCP burst through the connected ChatGPT → Windows Companion → Unity bridge on 2026-11-10: 401–1096 ms per call, 626 ms mean, unchanged Companion PID, ngrok reported `Ready`, and preserved five original scene roots.
 - Changed `Companion~/wdmcp-companion.ps1` to atomically replace existing JSON files using `File.Replace`, with `File.Move` for first publication and bounded retries. Removes the former delete-then-move gap where readers could see no status file.
 - Extended `Tests~/test-companion-functions.ps1` with a live-reader atomic-replacement regression and stale heartbeat check; introduced `Tests~/test-companion-stability.ps1` for read-only local/public JSON-RPC soak and optional **user-initiated** restart observation.
