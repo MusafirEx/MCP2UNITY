@@ -58,8 +58,8 @@ try {
     foreach ($case in $cases) {
         $Script:NextResult = $case.value
         $result = Invoke-UnityTool 'unity_read_console' ([ordered]@{})
-        Assert-True ($result.isError -eq $false -and $result.content[0].text -is [string]) 'MCP text is a string'
-        Assert-True ($result.content[0].text -eq $case.expected) ('Preserve JSON shape ' + $case.expected)
+        Assert-True ($result.isError -eq $false -and $result.content[0].text -is [string]) ('MCP text is a string for ' + $case.expected)
+        Assert-True ($result.content[0].text -ceq $case.expected) ('Preserve JSON shape ' + $case.expected)
     }
     $Script:NextContent = @([ordered]@{ type='image'; mimeType='image/jpeg'; data='ZGF0YQ==' })
     $imageResult = Invoke-UnityTool 'unity_capture_view' ([ordered]@{})
