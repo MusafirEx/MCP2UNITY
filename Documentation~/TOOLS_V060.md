@@ -135,6 +135,6 @@ Two new locally-reviewed tools, `unity_set_ui_property` and `unity_set_ui_layout
 The existing `unity_create_ui` now supports Slider, Toggle, legacy InputField and ScrollView. Two new locally reviewed tools, `unity_bind_button_event` (allowlisted `GameObject.SetActive(bool)` to same-Canvas UI) and `unity_delete_gameobject` (exact-name, ≤100-subtree-size guarded destruction), increase the catalog to 47 tools. See [UNITY_UI_TOOLS.md](UNITY_UI_TOOLS.md) for exact constraints and review examples. 22 new EditMode tests are included; run them in Unity after updating the package. Total suite size is 73.
 
 
-## Unity uGUI Phase 4 — PlayMode test candidate
+## Unity uGUI Phase 4 — PlayMode verified
 
-Added `Tests/PlayMode/UiRuntimePlayModeTests.cs` and its standalone Test Framework assembly (13 tests). Runtime fixtures verify uGUI pointer/input event dispatch and ScrollRect drag in PlayMode, independent of the persistent MCP approval path already covered by EditMode tests. 73/73 Phase 1–3 EditMode tests passed as of 10 November 2026; Phase 4 PlayMode execution is pending package update and approval.
+Added `Tests/PlayMode/UiRuntimePlayModeTests.cs` and its standalone Test Framework assembly (13 tests). Runtime fixtures verify uGUI pointer/input event dispatch and ScrollRect drag in PlayMode, independent of the persistent MCP approval path already covered by EditMode tests. 73/73 Phase 1–3 EditMode tests passed as of 10 November 2026; Phase 4 PlayMode tests passed **13/13** on 2026-11-10 in Unity 2022.3.62f3 after UPM refresh and local approval (action `f197a999ff82`, 0 failed/skipped). Total: **86/86** automated Unity tests, including 73/73 EditMode. Runtime fixture tests do not prove end-to-end interaction of MCP-created UI.
