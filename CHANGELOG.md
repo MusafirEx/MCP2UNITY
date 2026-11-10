@@ -1,10 +1,10 @@
 # Changelog
 
-## Phase 6 — safety guards and recovery (candidate, 12 new EditMode tests)
+## Phase 6 — safety guards and recovery (verified 2026-11-10)
 
 - Added `Tests/Editor/SafetyRecoveryIntegrationTests.cs` with 12 isolated EditMode tests for path traversal and write-root rejection, transient instance IDs, protected script identity, duplicate aliases, 50-operation limits, unsaved scene guard, inactive descendant deletion cap, parent/subtree drift, rollback protection when scene files change, and interrupted MCP IPC request recovery without replay.
 - All tests reuse the disposable Unity test fixture and never manipulate the user's gameplay scene. The recovery fixture writes only inside a new isolated `Library/McpPhase6Recovery_*` directory and deletes it afterward.
-- **Unverified candidate:** the source is committed on `main`, but Unity UPM refresh, compilation, and test approval are still required. The last verified automated result remains **96/96** through Phase 5. Phase 6 target is **108/108**. Phase 5 temporary EventSystem deletion is pending local approval.
+- **Verified 12/12 Phase 6 EditMode tests passed** in Unity 2022.3.62f3 on 2026-11-10, reviewed Editor action `abef18ce2b4b`, test run `4bfd294e-6c1e-48a6-9a34-839891d3c8bd`: 0 failed/skipped/inconclusive, 4.2824843 seconds. Cumulative measured result: **108/108 automated tests** (95 EditMode + 13 PlayMode). Unity compilation and Console were clean; the gameplay scene was saved, clean, and had its original 5 root GameObjects. Phase 5 EventSystem cleanup (`329662d370e0`) was approved and verified applied.
 
 
 
