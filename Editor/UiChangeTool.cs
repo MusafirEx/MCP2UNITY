@@ -196,8 +196,12 @@ namespace WasimDevelopment.UnityMcpBridge
                     tmp.color = ReadColor(op, Color.white);
                     break;
                 default:
-                    if (UiAdvancedTool.Supports(kind)) UiAdvancedTool.Apply(go, op);
-                    else throw new InvalidOperationException("Unexpected UI type: " + kind);
+                    if (UiAdvancedTool.Supports(kind))
+                    {
+                        UiAdvancedTool.Apply(go, op);
+                        break;
+                    }
+                    throw new InvalidOperationException("Unexpected UI type: " + kind);
             }
             EditorSceneManager.MarkSceneDirty(scene);
             return go;
