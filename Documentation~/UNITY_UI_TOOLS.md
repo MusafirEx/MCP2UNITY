@@ -184,6 +184,10 @@ The Undo system and pre-change scene backup cover the action. Old scene-file rol
 22 new EditMode tests target catalog/destructive permissions, four control hierarchies and configuration, invalid input rejection, ScrollView child parenting, advanced hierarchy inspection, deletion guards and rollback, and a safe Button onClick persistent listener. All **73/73 Phase 1–3 EditMode tests passed** in the Unity 2022.3.62f3 MuOnBaAr project on 10 November 2026.
 
 
+## Phase 5 — MCP UI serialization and scene/prefab persistence (verified)
+
+Ten new EditMode cases in `Tests/Editor/UiPersistenceIntegrationTests.cs` exercise MCP executor creation, multi-object alias hierarchies, Button SetActive persistent bindings, prefab serialization and scene save/reopen, UI inspection after reload, and saved Text/Layout/Slider/Toggle/InputField/ScrollRect settings. **10/10 passed** on 2026-11-10 in Unity 2022.3.62f3 (action `ccf630ce1fb8`, run `52a229fb-652d-45eb-99c6-2303e66e01e7`). **96/96 combined** automated tests passed. A direct Game-View click test on an MCP-created UI still remains.
+
 ## Phase 4 — runtime PlayMode interaction testing (verified)
 
 The package contains a **separate** `Tests/PlayMode/WasimUnityMcpBridge.PlayMode.Tests.asmdef` plus 13 `[UnityTest]` methods in `UiRuntimePlayModeTests.cs`. PlayMode fixtures create a temporary `Canvas` and `EventSystem` and tear both down without saving scene assets. Tests cover Button pointer-click and active-state callbacks, disabled button behavior, GraphicRaycaster hits, Slider event/range/whole-number and silent updates, Toggle pointer-click/disabled state, InputField value-change/character-limit and silent updates, and ScrollRect vertical normalized motion/pointer drag.
