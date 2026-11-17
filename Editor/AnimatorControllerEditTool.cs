@@ -395,7 +395,11 @@ namespace WasimDevelopment.UnityMcpBridge
         private static AnimatorStateMachine Machine(AnimatorControllerLayer layer, string path)
         {
             AnimatorStateMachine current = layer.stateMachine;
-            if (string.IsNullOrEmpty(path)) return current;
+            if (string.IsNullOrEmpty(path) || path == layer.name) return current;
+            // Inspector graph paths begin with the layer name; accept those
+            // as well as shorter paths relative to the selected layer.
+            if (path.StartsWith(layer.name + "/", StringComparison.Ordinal))
+                path = path.Substring(layer.name.Length + 1);
             foreach (string name in path.Split('/'))
             {
                 ChildAnimatorStateMachine[] candidates = current.stateMachines
@@ -409,6 +413,8 @@ namespace WasimDevelopment.UnityMcpBridge
 
         private static AnimatorState State(AnimatorControllerLayer layer, string path)
         {
+            if (path.StartsWith(layer.name + "/", StringComparison.Ordinal))
+                path = path.Substring(layer.name.Length + 1);
             string[] pieces = path.Split('/');
             AnimatorStateMachine machine = Machine(layer,
                 string.Join("/", pieces.Take(pieces.Length - 1).ToArray()));
