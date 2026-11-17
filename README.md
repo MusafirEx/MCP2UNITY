@@ -1,6 +1,6 @@
 # MCP2UNITY
 
-> **Animator Controller upgrade on `main` (2026-11-17, verification pending):** The catalog now provides **48 MCP tools**, including `unity_propose_animator_controller_edit` for reviewed parameter/state/transition changes, and `unity_inspect_animator_controller` supports `controllerPath` and asset SHA-256. All edits require local Unity Change Sets approval, file-hash guards, backup and rollback. New EditMode tests are committed but **have not yet been run** after a UPM refresh. See [Animator Controller documentation](Documentation~/ANIMATOR_CONTROLLER.md).
+> **Animator Controller upgrade on `main` (2026-11-17, verified EditMode):** The catalog now provides **48 MCP tools**, including `unity_propose_animator_controller_edit` for reviewed parameter/state/transition changes, and `unity_inspect_animator_controller` supports `controllerPath` and asset SHA-256. All edits require local Unity Change Sets approval, file-hash guards, backup and rollback. After UPM refresh the full EditMode suite **PASSED 237/237** (0 failed/skipped/inconclusive, action `7005c2d43ed7`), with 48 tools advertised and no compilation errors. Gameplay Animator behavior still requires Play Mode verification. See [Animator Controller documentation](Documentation~/ANIMATOR_CONTROLLER.md).
 
 
 **Version: 0.5.2 (experimental backport)** | **Unity: 2022.3 LTS (validated on 2022.3.62f3)** | **Windows PowerShell companion**
