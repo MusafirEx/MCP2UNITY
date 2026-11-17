@@ -66,8 +66,12 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             var edits = new JArray(
                 new JObject { ["action"] = "addParameter", ["name"] = "IsRunning",
                     ["parameterType"] = "Bool", ["defaultBool"] = false },
+                new JObject { ["action"] = "setParameterDefault", ["name"] = "IsRunning",
+                    ["defaultBool"] = true },
                 new JObject { ["action"] = "addState", ["layer"] = layer,
                     ["name"] = "Run", ["speed"] = 1.5, ["writeDefaultValues"] = false },
+                new JObject { ["action"] = "setDefaultState", ["layer"] = layer,
+                    ["state"] = "Run" },
                 new JObject { ["action"] = "addTransition", ["layer"] = layer,
                     ["source"] = "Idle", ["destination"] = "Run",
                     ["hasExitTime"] = false, ["duration"] = 0.1,
@@ -83,10 +87,11 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 .Any(x => x.state.name == "Run"));
             ChangeSets.Approve((string)proposal["id"]);
             Assert.IsTrue(AnimatorControllerEditTool.Load(path).parameters
-                .Any(p => p.name == "IsRunning"));
+                .Any(p => p.name == "IsRunning" && p.defaultBool));
             AnimatorStateMachine graph = AnimatorControllerEditTool.Load(path).layers[0].stateMachine;
             AnimatorState run = graph.states.Single(x => x.state.name == "Run").state;
             AnimatorState idle = graph.states.Single(x => x.state.name == "Idle").state;
+            Assert.AreSame(run, graph.defaultState);
             Assert.AreEqual(1.5f, run.speed, 0.0001f);
             Assert.IsFalse(run.writeDefaultValues);
             Assert.AreEqual(1, idle.transitions.Length);
