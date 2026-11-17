@@ -1,3 +1,11 @@
+## Animator Controller graph editing (2026-11-17 — implementation on `main`, Unity verification pending)
+
+- **48th MCP tool:** `unity_propose_animator_controller_edit` supports batches of 1–50 ordered, restricted commands: `addParameter`, `setParameterDefault`, `addState`, `setState`, `setDefaultState`, `addTransition`, `setTransition`, `removeTransition`, and `setLayer`.
+- Extended existing `unity_inspect_animator_controller` and alias `unity_get_animator_info` with `controllerPath` (selection optional) and `sha256` for the project-owned controller asset. Readout retains parameters, nested state-machine graph, transitions, conditions, clips/blend trees and override mappings.
+- Animator mutation requests produce **Pending Change Sets**, with stable Edit Mode restriction, explicit Unity user approval, SHA-256 revalidation, `.controller` and `.meta` byte backups, Undo/file rollback, and user-reviewed rollback proposal. Only editable `Assets/**/*.controller` assets can be mutated; `Packages/`, imported/override controller variants and runtime controllers are excluded from edits.
+- Added `Tests/Editor/AnimatorControllerIntegrationTests.cs` disposable fixture tests (5) for read-by-path, multi-step parameter/state/transition changes, stale hash, invalid paths/commands and transition rollback. Updated Phase 7 contract and Windows PowerShell transport expectations from **47 to 48** advertised tools.
+- Documentation: `Documentation~/ANIMATOR_CONTROLLER.md`. **Not yet compiled or executed inside the user's Unity Editor after UPM refresh**; previous 160/160 EditMode success applies to the former 47-tool build only.
+
 ## Wasim MCP Reviews — long JSON readability fix (2026-11-10)
 
 - Replaced the clipped `EditorGUILayout.TextArea` (formerly capped to 260 px) in `Editor/ChangeSetWindow.cs` with a **read-only, selectable, wrapped JSON preview in its own vertically scrollable area**. Each change set and Editor action retains its own scroll position; `Expand/Compact` adjusts viewport height. Full review JSON remains available through the **Copy complete review JSON** button. **Approve/Reject** retain fixed 92 px widths.
