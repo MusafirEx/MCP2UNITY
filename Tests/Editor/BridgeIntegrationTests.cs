@@ -963,7 +963,7 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         public void UiPhase3CatalogAdvertisesAdvancedControlsAndSafeActions()
         {
             var tools = McpToolCatalog.Build().OfType<JObject>().ToDictionary(t => (string)t["name"]);
-            Assert.AreEqual(47, tools.Count);
+            Assert.AreEqual(48, tools.Count);
             foreach (string name in new[] { "unity_bind_button_event", "unity_delete_gameobject" })
             {
                 Assert.IsFalse(tools[name]["annotations"]["readOnlyHint"].Value<bool>());
