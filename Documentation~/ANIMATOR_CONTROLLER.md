@@ -1,6 +1,6 @@
 # Animator Controller analysis and reviewed editing
 
-**Status:** implementation committed to `main` for Unity 2022.3 Editor compilation and EditMode verification. Not yet verified in the user's Unity installation.
+**Status (2026-11-17):** committed to `main` and verified in the connected Unity Editor after UPM update: **237/237 EditMode tests PASSED**, 0 failed/skipped/inconclusive; advertised 48 MCP tools. Editor Action `7005c2d43ed7`, test run `d0ca00b6-b6c1-472d-b0a8-7f3029459a0f`; 261.58 seconds. Gameplay validation in Play Mode remains outstanding.
 
 ## MCP tools
 
@@ -60,7 +60,7 @@ Then review and approve the Pending Change Set in **Window → Wasim Development
 
 `Tests/Editor/AnimatorControllerIntegrationTests.cs` adds targeted tests in the existing disposable fixture folder for: inspector by path without changing selection, pending edit vs approval, multi-step parameter/state/transition editing, stale-hash rejection, protected paths and fields, transition timing and rollback.
 
-After a Git UPM update from `main`, verify Unity compilation and run **all EditMode tests** via reviewed `unity_propose_editor_action` / `runTests`. Existing Phase 7 contract expectations and PowerShell stability tooling have been updated for **48 tools**. Do **not** assume earlier 160/160 results include these new changes.
+**Completed on 2026-11-17:** after Git UPM update from `main`, Unity compiled without errors and the user approved `runTests` action `7005c2d43ed7`. The full EditMode suite reported **237 passed, 0 failed, 0 skipped, 0 inconclusive** (261.58 seconds), with 48 tools active. Existing Phase 7 contract expectations and PowerShell stability tooling were updated for 48 tools. This does not itself prove animation timing in Play Mode or exhaustive Windows ngrok transport stability with the new tool.
 
 ## Limitations
 
