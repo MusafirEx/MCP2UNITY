@@ -71,9 +71,9 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 new JObject { ["action"] = "addState", ["layer"] = layer,
                     ["name"] = "Run", ["speed"] = 1.5, ["writeDefaultValues"] = false },
                 new JObject { ["action"] = "setDefaultState", ["layer"] = layer,
-                    ["state"] = "Run" },
+                    ["state"] = layer + "/Run" },
                 new JObject { ["action"] = "addTransition", ["layer"] = layer,
-                    ["source"] = "Idle", ["destination"] = "Run",
+                    ["source"] = layer + "/Idle", ["destination"] = layer + "/Run",
                     ["hasExitTime"] = false, ["duration"] = 0.1,
                     ["conditions"] = new JArray(new JObject {
                         ["parameter"] = "IsRunning", ["mode"] = "If"
