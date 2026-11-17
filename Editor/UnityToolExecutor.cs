@@ -47,6 +47,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 case "unity_analyze_selected_folder": return FolderAnalysisService.Analyze(arguments);
                 case "unity_inspect_animator_controller":
                 case "unity_get_animator_info": return GetAnimatorInfo(arguments);
+                case "unity_propose_animator_controller_edit": return AnimatorControllerEditTool.Propose(arguments);
                 case "unity_get_packages": return GetPackages();
                 case "unity_get_script_change_proposals": return ScriptChangeManager.GetProposalSummaries(ReadBool(arguments, "includeCompleted", false));
                 case "unity_propose_script_text_patch":
@@ -707,32 +708,49 @@ namespace WasimDevelopment.UnityMcpBridge
             int maximumTransitions = ReadInt(args, "maximumTransitions", 600, 1, 2000);
             int maximumMotions = ReadInt(args, "maximumMotions", 500, 1, 2000);
 
+            string requestedPath = ReadString(args, "controllerPath", string.Empty);
             UnityEngine.Object selected = Selection.activeObject;
-            if (selected == null) throw new InvalidOperationException("Nothing is selected in Unity.");
-
             Animator animator = null;
             RuntimeAnimatorController runtimeController = null;
             string selectionKind;
+            string selectedName;
 
-            GameObject selectedGameObject = Selection.activeGameObject;
-            if (selectedGameObject != null)
+            if (!string.IsNullOrWhiteSpace(requestedPath))
             {
-                animator = selectedGameObject.GetComponent<Animator>();
-                if (animator == null && searchChildren)
-                    animator = selectedGameObject.GetComponentInChildren<Animator>(true);
-                if (animator == null)
-                    throw new InvalidOperationException("No Animator was found on the selected GameObject" + (searchChildren ? " or its children." : "."));
-                runtimeController = animator.runtimeAnimatorController;
-                selectionKind = "AnimatorComponent";
-            }
-            else if (selected is RuntimeAnimatorController selectedController)
-            {
-                runtimeController = selectedController;
-                selectionKind = selected.GetType().Name;
+                if (!requestedPath.StartsWith("Assets/", StringComparison.Ordinal) &&
+                    !requestedPath.StartsWith("Packages/", StringComparison.Ordinal))
+                    throw new ArgumentException("controllerPath must be an Assets/ or Packages/ asset path.");
+                runtimeController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(requestedPath);
+                if (runtimeController == null)
+                    throw new ArgumentException("No Animator Controller asset at: " + requestedPath);
+                selectionKind = "AssetPath";
+                selectedName = runtimeController.name;
             }
             else
             {
-                throw new InvalidOperationException("Select a GameObject with an Animator, an Animator Controller asset, or an Animator Override Controller asset.");
+                if (selected == null) throw new InvalidOperationException(
+                    "Select an Animator/controller in Unity or provide controllerPath.");
+                selectedName = selected.name;
+                GameObject selectedGameObject = Selection.activeGameObject;
+                if (selectedGameObject != null)
+                {
+                    animator = selectedGameObject.GetComponent<Animator>();
+                    if (animator == null && searchChildren)
+                        animator = selectedGameObject.GetComponentInChildren<Animator>(true);
+                    if (animator == null)
+                        throw new InvalidOperationException("No Animator found on selected GameObject" +
+                            (searchChildren ? " or its children." : "."));
+                    runtimeController = animator.runtimeAnimatorController;
+                    selectionKind = "AnimatorComponent";
+                }
+                else if (selected is RuntimeAnimatorController selectedController)
+                {
+                    runtimeController = selectedController;
+                    selectionKind = selected.GetType().Name;
+                }
+                else
+                    throw new InvalidOperationException(
+                        "Select an Animator, Animator Controller, or Animator Override Controller.");
             }
 
             AnimatorOverrideController overrideController = runtimeController as AnimatorOverrideController;
@@ -818,12 +836,15 @@ namespace WasimDevelopment.UnityMcpBridge
             {
                 ["bridgeVersion"] = BridgeVersion.PackageVersion,
                 ["selectionKind"] = selectionKind,
-                ["selectedObject"] = selected.name,
+                ["selectedObject"] = selectedName,
                 ["runtimeController"] = runtimeController == null ? "null" : runtimeController.name,
                 ["runtimeControllerType"] = runtimeController == null ? string.Empty : runtimeController.GetType().FullName,
                 ["runtimeControllerAssetPath"] = runtimeController == null ? string.Empty : AssetDatabase.GetAssetPath(runtimeController),
                 ["animatorController"] = controller.name,
                 ["animatorControllerAssetPath"] = AssetDatabase.GetAssetPath(controller),
+                ["sha256"] = AssetDatabase.GetAssetPath(controller).StartsWith("Assets/", StringComparison.Ordinal)
+                    ? ChangeSets.HashFile(ProjectSecurity.ResolveAssetFile(AssetDatabase.GetAssetPath(controller), true))
+                    : string.Empty,
                 ["overrideControllerAssetPath"] = overrideController == null ? string.Empty : AssetDatabase.GetAssetPath(overrideController),
                 ["parameters"] = parameters,
                 ["layers"] = layers,
