@@ -36,12 +36,12 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
-        public void Phase7CatalogContainsExactly47UniqueTools()
+        public void Phase7CatalogContainsExactly48UniqueTools()
         {
             JArray tools = McpToolCatalog.Build();
             string[] names = tools.Select(x => (string)x["name"]).ToArray();
-            Assert.AreEqual(47, names.Length, "The advertised MCP surface changed.");
-            Assert.AreEqual(47, names.Distinct(StringComparer.Ordinal).Count());
+            Assert.AreEqual(48, names.Length, "The advertised MCP surface changed.");
+            Assert.AreEqual(48, names.Distinct(StringComparer.Ordinal).Count());
             Assert.IsTrue(names.All(x => x.StartsWith("unity_", StringComparison.Ordinal)));
         }
 
@@ -119,7 +119,8 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 "unity_propose_change_set", "unity_get_test_results",
                 "unity_create_canvas", "unity_create_ui", "unity_set_rect_transform",
                 "unity_inspect_ui", "unity_set_ui_property", "unity_set_ui_layout",
-                "unity_bind_button_event", "unity_delete_gameobject"
+                "unity_bind_button_event", "unity_delete_gameobject",
+                "unity_propose_animator_controller_edit", "unity_inspect_animator_controller"
             };
             HashSet<string> available = new HashSet<string>(
                 McpToolCatalog.Build().Select(x => (string)x["name"]),
@@ -133,7 +134,8 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             foreach (string name in new[] {
                 "unity_get_status", "unity_read_script", "unity_get_active_scene",
                 "unity_read_console", "unity_inspect_ui", "unity_inspect_runtime",
-                "unity_get_change_sets", "unity_get_test_results"
+                "unity_get_change_sets", "unity_get_test_results",
+                "unity_inspect_animator_controller"
             })
             {
                 JObject hints = (JObject)Phase7CatalogTool(name)["annotations"];
@@ -145,7 +147,8 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 "unity_create_canvas", "unity_create_ui",
                 "unity_bind_button_event", "unity_delete_gameobject",
                 "unity_propose_change_set", "unity_propose_editor_action",
-                "unity_propose_script_text_patch"
+                "unity_propose_script_text_patch",
+                "unity_propose_animator_controller_edit"
             })
                 Assert.IsFalse(Phase7CatalogTool(name)["annotations"]["readOnlyHint"]
                     .Value<bool>(), name);
@@ -154,12 +157,12 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
-        public void Phase7StatusAdvertisesSame47ToolsAsCatalog()
+        public void Phase7StatusAdvertisesSame48ToolsAsCatalog()
         {
             JObject status = (JObject)UnityToolExecutor.Execute(
                 "unity_get_status", new JObject());
             Assert.AreEqual("0.5.2", (string)status["bridgeVersion"]);
-            Assert.AreEqual(47, (int)status["advertisedToolCount"]);
+            Assert.AreEqual(48, (int)status["advertisedToolCount"]);
             CollectionAssert.AreEquivalent(
                 McpToolCatalog.Build().Select(x => (string)x["name"]).ToArray(),
                 ((JArray)status["advertisedTools"]).Values<string>().ToArray());
