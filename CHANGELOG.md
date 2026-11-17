@@ -1,10 +1,10 @@
-## Animator Controller graph editing (2026-11-17 — implementation on `main`, Unity verification pending)
+## Animator Controller graph editing (2026-11-17 — Unity EditMode regression PASSED)
 
 - **48th MCP tool:** `unity_propose_animator_controller_edit` supports batches of 1–50 ordered, restricted commands: `addParameter`, `setParameterDefault`, `addState`, `setState`, `setDefaultState`, `addTransition`, `setTransition`, `removeTransition`, and `setLayer`.
 - Extended existing `unity_inspect_animator_controller` and alias `unity_get_animator_info` with `controllerPath` (selection optional) and `sha256` for the project-owned controller asset. Readout retains parameters, nested state-machine graph, transitions, conditions, clips/blend trees and override mappings.
 - Animator mutation requests produce **Pending Change Sets**, with stable Edit Mode restriction, explicit Unity user approval, SHA-256 revalidation, `.controller` and `.meta` byte backups, Undo/file rollback, and user-reviewed rollback proposal. Only editable `Assets/**/*.controller` assets can be mutated; `Packages/`, imported/override controller variants and runtime controllers are excluded from edits.
 - Added `Tests/Editor/AnimatorControllerIntegrationTests.cs` disposable fixture tests (5) for read-by-path, multi-step parameter/state/transition changes, stale hash, invalid paths/commands and transition rollback. Updated Phase 7 contract and Windows PowerShell transport expectations from **47 to 48** advertised tools.
-- Documentation: `Documentation~/ANIMATOR_CONTROLLER.md`. **Not yet compiled or executed inside the user's Unity Editor after UPM refresh**; previous 160/160 EditMode success applies to the former 47-tool build only.
+- Documentation: `Documentation~/ANIMATOR_CONTROLLER.md`. **Verified in Unity on 2026-11-17 after UPM refresh:** approved Editor Action `7005c2d43ed7`, Test Runner ID `d0ca00b6-b6c1-472d-b0a8-7f3029459a0f`, **237/237 EditMode passed**, 0 failed, 0 skipped, 0 inconclusive, 261.58 seconds. Direct status advertised 48 tools, including the Animator edit tool; compilation clean, scene saved/clean with 11 roots. A pre-existing MuOnBaAr ACL00 missing-PEMT warning was the sole console entry. Real gameplay Animator behavior has not yet been verified in Play Mode.
 
 ## Wasim MCP Reviews — long JSON readability fix (2026-11-10)
 
