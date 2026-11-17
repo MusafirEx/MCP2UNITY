@@ -6,6 +6,35 @@ namespace WasimDevelopment.UnityMcpBridge
     {
         public static void AppendCatalog(JArray tools)
         {
+            tools.Add(Tool("unity_propose_animator_controller_edit",
+                "Prepare 1-50 reviewed changes to an existing Assets/**/*.controller Animator Controller. Supports parameters, state motions/speed/defaults, layers, transitions, timing and conditions. Requires SHA-256 from unity_inspect_animator_controller; creates a pending guarded Change Set with file backups and rollback. No asset is edited until approved in Unity.",
+                Required(Schema(
+                    P("path", Str()),
+                    P("expectedSha256", Str()),
+                    P("summary", Str()),
+                    P("edits", new JObject {
+                        ["type"] = "array", ["minItems"] = 1, ["maxItems"] = 50,
+                        ["items"] = Required(Schema(
+                            P("action", Enum("addParameter", "setParameterDefault", "addState", "setState",
+                                "setDefaultState", "addTransition", "setTransition", "removeTransition", "setLayer")),
+                            P("layer", Str()), P("name", Str()), P("parameterType", Enum("Float", "Int", "Bool", "Trigger")),
+                            P("defaultBool", Bool(false)), P("defaultInt", Int(0, int.MinValue, int.MaxValue)),
+                            P("defaultFloat", Number()), P("machine", Str()), P("state", Str()), P("source", Str()),
+                            P("destination", Str()), P("index", Int(0, 0, 100000)),
+                            P("expectedDestination", Str()), P("motionPath", Str()), P("clipName", Str()),
+                            P("speed", Number()), P("tag", Str()), P("writeDefaultValues", Bool(true)),
+                            P("mirror", Bool(false)), P("iKOnFeet", Bool(false)), P("cycleOffset", Number()),
+                            P("duration", Number()), P("hasExitTime", Bool(true)), P("exitTime", Number()),
+                            P("hasFixedDuration", Bool(false)), P("offset", Number()),
+                            P("canTransitionToSelf", Bool(false)), P("defaultWeight", Number()),
+                            P("iKPass", Bool(false)), P("conditions", new JObject {
+                                ["type"] = "array", ["maxItems"] = 20,
+                                ["items"] = Required(Schema(
+                                    P("parameter", Str()),
+                                    P("mode", Enum("If", "IfNot", "Greater", "Less", "Equals", "NotEqual")),
+                                    P("threshold", Number())), "parameter", "mode")
+                            })), "action")
+                    })), "path", "expectedSha256", "summary", "edits"), false));
             tools.Add(Tool("unity_inspect_runtime", "Read bounded live Unity/ClientSim state, stable object IDs and nested serialized fields. Includes Rigidbody, Joint, Collider, Animator and optional VRChat pickup/owner/Udon variables. Does not inspect an external VRChat client.",
                 Schema(OptId(), P("maximumObjects", Int(30, 1, 200)), P("maximumProperties", Int(80, 1, 300)),
                     P("includeSerialized", Bool(true)), P("udonVariables", Strings(32)))));
