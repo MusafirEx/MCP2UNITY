@@ -144,8 +144,8 @@ namespace WasimDevelopment.UnityMcpBridge
             {
                 Name(edit, "name");
                 if (action == "addParameter") ParameterType(Name(edit, "parameterType"));
-                else if (!controller.parameters.Any(p => p.name == (string)edit["name"]))
-                    throw new ArgumentException("Unknown Animator parameter: " + (string)edit["name"]);
+                // setParameterDefault may refer to a parameter added earlier
+                // in the same reviewed batch. Resolve it during ApplyOne.
             }
             else
             {
