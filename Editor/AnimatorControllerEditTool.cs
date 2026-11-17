@@ -109,6 +109,37 @@ namespace WasimDevelopment.UnityMcpBridge
             foreach (JProperty prop in edit.Properties())
                 if (!common.Contains(prop.Name, StringComparer.Ordinal))
                     throw new ArgumentException("Unsupported Animator edit field: " + prop.Name);
+            string[] allowed = action == "addParameter" ?
+                new[] { "name", "parameterType", "defaultBool", "defaultInt", "defaultFloat" } :
+                action == "setParameterDefault" ?
+                new[] { "name", "defaultBool", "defaultInt", "defaultFloat" } :
+                action == "addState" ?
+                new[] { "layer", "machine", "name", "motionPath", "clipName", "speed",
+                    "tag", "writeDefaultValues", "mirror", "iKOnFeet", "cycleOffset" } :
+                action == "setState" ?
+                new[] { "layer", "state", "motionPath", "clipName", "speed",
+                    "tag", "writeDefaultValues", "mirror", "iKOnFeet", "cycleOffset" } :
+                action == "setDefaultState" ? new[] { "layer", "machine", "state" } :
+                action == "addTransition" ?
+                new[] { "layer", "source", "destination", "duration", "hasExitTime",
+                    "exitTime", "hasFixedDuration", "offset", "canTransitionToSelf",
+                    "conditions" } :
+                action == "setTransition" ?
+                new[] { "layer", "source", "index", "expectedDestination", "duration",
+                    "hasExitTime", "exitTime", "hasFixedDuration", "offset",
+                    "canTransitionToSelf", "conditions" } :
+                action == "removeTransition" ?
+                new[] { "layer", "source", "index", "expectedDestination" } :
+                new[] { "layer", "defaultWeight", "iKPass" };
+            foreach (JProperty prop in edit.Properties())
+                if (prop.Name != "action" && !allowed.Contains(prop.Name, StringComparer.Ordinal))
+                    throw new ArgumentException("Field " + prop.Name + " is not supported by " + action);
+            if ((action == "setTransition" || action == "removeTransition") &&
+                string.IsNullOrWhiteSpace((string)edit["expectedDestination"]))
+                throw new ArgumentException("Transition edits require expectedDestination to guard the selected index.");
+            if ((action == "addState" || action == "setState") &&
+                edit["clipName"] != null && edit["motionPath"] == null)
+                throw new ArgumentException("clipName requires motionPath.");
             if (action == "addParameter" || action == "setParameterDefault")
             {
                 Name(edit, "name");
@@ -228,8 +259,13 @@ namespace WasimDevelopment.UnityMcpBridge
             }
             if (action == "setDefaultState")
             {
-                Undo.RecordObject(layer.stateMachine, "Set default Animator state");
-                layer.stateMachine.defaultState = State(layer, Name(e, "state"));
+                AnimatorStateMachine machine = Machine(layer, (string)e["machine"]);
+                AnimatorState target = State(layer, Name(e, "state"));
+                if (!machine.states.Any(child => child.state == target))
+                    throw new ArgumentException("Default state must belong directly to its state machine.");
+                Undo.RecordObject(machine, "Set default Animator state");
+                machine.defaultState = target;
+                EditorUtility.SetDirty(machine);
                 return;
             }
             if (action == "addTransition")
