@@ -66,14 +66,16 @@ namespace WasimDevelopment.UnityMcpBridge
                         Prop("maximumDetailedItemsPerType", IntegerSchema("Maximum scripts, prefabs and Animator Controllers to analyze in detail per type, from 1 to 200.", 30, 1, 200)),
                         Prop("maximumIssues", IntegerSchema("Maximum issue records to return, from 1 to 1000.", 150, 1, 1000)),
                         Prop("maximumDependencies", IntegerSchema("Maximum external dependencies to return, from 0 to 1000.", 100, 0, 1000)))),
-                ReadTool("unity_inspect_animator_controller", "Inspect the selected Animator component, Animator Controller asset, or Animator Override Controller asset. Returns controller parameters, layers, nested state machines, states, Any State and Entry transitions, state transitions and conditions, blend trees, motions, animation clips, behaviours, and override mappings.",
+                ReadTool("unity_inspect_animator_controller", "Inspect selected Animator or an Animator Controller asset by controllerPath. Returns SHA-256 for guarded edits; parameters, layers, nested machines/states, transitions and conditions, clips, blend trees and override mappings.",
                     ObjectSchema(
+                        Prop("controllerPath", StringSchema("Optional Assets/ or Packages/ Animator Controller path; selection is used when omitted.")),
                         Prop("searchChildren", BooleanSchema("Search children when the selected GameObject has no Animator.", true)),
                         Prop("maximumStates", IntegerSchema("Maximum states across all layers, from 1 to 1000.", 250, 1, 1000)),
                         Prop("maximumTransitions", IntegerSchema("Maximum transitions across all state machines, from 1 to 2000.", 600, 1, 2000)),
                         Prop("maximumMotions", IntegerSchema("Maximum motion and blend-tree nodes, from 1 to 2000.", 500, 1, 2000)))),
-                ReadTool("unity_get_animator_info", "Compatibility alias for unity_inspect_animator_controller. Inspect the selected Animator Controller graph, including parameters, layers, states, transitions, conditions, blend trees, motions and animation clips.",
+                ReadTool("unity_get_animator_info", "Compatibility alias for unity_inspect_animator_controller; supports controllerPath and SHA-256 for reviewed edits.",
                     ObjectSchema(
+                        Prop("controllerPath", StringSchema("Optional Assets/ or Packages/ Animator Controller path.")),
                         Prop("searchChildren", BooleanSchema("Search children when the selected GameObject has no Animator.", true)),
                         Prop("maximumStates", IntegerSchema("Maximum states across all layers, from 1 to 1000.", 250, 1, 1000)),
                         Prop("maximumTransitions", IntegerSchema("Maximum transitions across all state machines, from 1 to 2000.", 600, 1, 2000)),
