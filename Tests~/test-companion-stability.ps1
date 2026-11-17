@@ -91,14 +91,14 @@ function Test-RoundTrip([string]$Endpoint, [string]$Label) {
     Assert-State (-not [string]::IsNullOrWhiteSpace([string]$init.result.protocolVersion)) ($Label + ': initialize failed')
     $tools = Invoke-PrivateMcp $Endpoint 'tools/list' ([ordered]@{})
     $toolCount = @($tools.result.tools).Count
-    Assert-State ($toolCount -eq 47) ($Label + ': expected 47 tools, got ' + $toolCount)
+    Assert-State ($toolCount -eq 48) ($Label + ': expected 48 tools, got ' + $toolCount)
     $ping = Invoke-PrivateMcp $Endpoint 'ping' ([ordered]@{})
     Assert-State ($null -ne $ping.result) ($Label + ': ping failed')
     $rpc = Invoke-PrivateMcp $Endpoint 'tools/call' ([ordered]@{name='unity_get_status';arguments=[ordered]@{}})
     Assert-State ($rpc.result.isError -eq $false) ($Label + ': Unity IPC reported error')
     $unity = ([string]$rpc.result.content[0].text) | ConvertFrom-Json
     Assert-State ([bool]$unity.connected) ($Label + ': bridge not connected')
-    Assert-State ([int]$unity.advertisedToolCount -eq 47) ($Label + ': tool count mismatch')
+    Assert-State ([int]$unity.advertisedToolCount -eq 48) ($Label + ': tool count mismatch')
     Assert-State ([bool]$unity.unityIpcConnected) ($Label + ': Unity heartbeat not connected')
     return [pscustomobject]@{Label=$Label;ToolCount=$toolCount;BridgeVersion=[string]$unity.bridgeVersion}
 }
