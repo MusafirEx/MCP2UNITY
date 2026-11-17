@@ -19,7 +19,7 @@ namespace WasimDevelopment.UnityMcpBridge
         private static string Index => Path.Combine(Root, "index.json");
         private static JArray _records;
         private static readonly HashSet<string> Kinds = new HashSet<string> {
-            "set_property", "set_ui_layout", "delete_gameobject", "bind_ui_button_event", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab" };
+            "set_property", "set_ui_layout", "delete_gameobject", "bind_ui_button_event", "add_component", "create_gameobject", "create_ui", "create_script", "replace_script", "save_prefab", "edit_animator_controller" };
 
         private static JArray Records
         {
@@ -125,6 +125,13 @@ namespace WasimDevelopment.UnityMcpBridge
                         if (string.IsNullOrWhiteSpace(content) || Encoding.UTF8.GetByteCount(content) > ProjectSecurity.MaxScriptBytes)
                             throw new ArgumentException("Script content must contain 1-256 KB of UTF-8 text.");
                     }
+                }
+                if (kind == "edit_animator_controller")
+                {
+                    AnimatorControllerEditTool.ValidateOperation(op);
+                    if (!changedFiles.Add((string)op["path"]))
+                        throw new ArgumentException("One Animator edit batch per controller per Change Set.");
+                    op["beforeFileSha256"] = (string)op["expectedSha256"];
                 }
                 if (kind == "create_gameobject" || kind == "create_ui")
                 {
@@ -291,6 +298,8 @@ namespace WasimDevelopment.UnityMcpBridge
                     string full = ProjectSecurity.ResolveAssetFile((string)op["path"], true);
                     if (HashFile(full) != (string)op["beforeFileSha256"]) throw new InvalidOperationException("Script changed since proposal.");
                 }
+                if (kind == "edit_animator_controller")
+                    AnimatorControllerEditTool.ValidateOperation(op);
                 else if (kind == "create_script" || kind == "save_prefab")
                 {
                     string full = ProjectSecurity.ResolveAssetFile((string)op["path"], true);
@@ -384,6 +393,11 @@ namespace WasimDevelopment.UnityMcpBridge
                 if (kind == "create_script")
                     AtomicFile.WriteText(full + ".meta", "fileFormatVersion: 2\nguid: " + Guid.NewGuid().ToString("N")
                         + "\nMonoImporter:\n  externalObjects: {}\n  serializedVersion: 2\n  defaultReferences: []\n  executionOrder: 0\n  icon: {instanceID: 0}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n");
+            }
+            else if (kind == "edit_animator_controller")
+            {
+                // Project asset edit through the same reviewed backup/rollback path.
+                AnimatorControllerEditTool.Apply(op);
             }
             else if (kind == "create_ui")
             {
