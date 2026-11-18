@@ -1,0 +1,452 @@
+{
+  "buildTool": "Tools~/OCR/build_windows_bundle.py",
+  "engine": "tesseract 5.5.4",
+  "files": {
+    "libLerc.dll": {
+      "bytes": 803103,
+      "sha256": "1ffee78579c25b073267bcac8d0a6045d9bd446e010c7953b569b2629ca8a58a"
+    },
+    "libarchive-13.dll": {
+      "bytes": 1001423,
+      "sha256": "862e1d2ed6c4adf86d60e0c2f08a16c2a49d015a49775f402698511258ac44d8"
+    },
+    "libb2-1.dll": {
+      "bytes": 35323,
+      "sha256": "01bbf64090367d511f41d9fc8f34c557f61d4a227b7c9e47ce04052cbfdc3e7d"
+    },
+    "libbrotlicommon.dll": {
+      "bytes": 140697,
+      "sha256": "7b0047dc16dd92a7932124dfd5a6e698d342f533a15d37d61f710def66091436"
+    },
+    "libbrotlidec.dll": {
+      "bytes": 60224,
+      "sha256": "c4c987a01597ddf969d93023f933f999a20f285588b0decb4deeb780c9e9cdf8"
+    },
+    "libbz2-1.dll": {
+      "bytes": 107741,
+      "sha256": "1790bf6473c9d48db14c1f0ee8124142327556d281299ea2a72ee361118ee01a"
+    },
+    "libcrypto-4-x64.dll": {
+      "bytes": 5590344,
+      "sha256": "ff5bd426835acf70a03e6fd8bb51b60441806bf228de608caf4355b57f0c2340"
+    },
+    "libcurl-4.dll": {
+      "bytes": 1413589,
+      "sha256": "07ffcc59d7c012b39956f4f21dc8875f3892d1570077606703e23ebb2b0dee0f"
+    },
+    "libdeflate.dll": {
+      "bytes": 97053,
+      "sha256": "61a60665da9fd15a0e8668c47424f325e1d74479c3f896fa7ae48ffcee4ca300"
+    },
+    "libgcc_s_seh-1.dll": {
+      "bytes": 150025,
+      "sha256": "44f6318f96eb2aaf6e90400bb1178ab6d55b01ae2cf24846d6b30d96e87e89dd"
+    },
+    "libgif-7.dll": {
+      "bytes": 46093,
+      "sha256": "547f069546e3233430d3cbf106b403fbdc9c5cf1518e525c462533d58843b31e"
+    },
+    "libgomp-1.dll": {
+      "bytes": 326944,
+      "sha256": "3de964e7d130009a9c58f70f01698552e3debc0707f0e19d4d1a7d7bec90052e"
+    },
+    "libiconv-2.dll": {
+      "bytes": 1139262,
+      "sha256": "9824e9f78e76ad513e5ba0d697c60de2fb24a21c20922bc2f918c86998a08cab"
+    },
+    "libidn2-0.dll": {
+      "bytes": 244380,
+      "sha256": "1103631c9f063083407d05d6baeacd564c774f6803ba54421ee53dfb3e25c1b9"
+    },
+    "libintl-8.dll": {
+      "bytes": 298164,
+      "sha256": "0e5a178731e6be6d115442a6ade3df7f03265cd1fc4338f8b6f86a8001cbf582"
+    },
+    "libjbig-0.dll": {
+      "bytes": 61598,
+      "sha256": "36b6155be36d24a19154a48177a09978ff6c26f48665d8c7bb5057aaace6b91c"
+    },
+    "libjpeg-8.dll": {
+      "bytes": 963471,
+      "sha256": "22286acc18b907d03eec1177c99f54a802a6f8437888d1abb79e65a7ecd14605"
+    },
+    "libleptonica-6.dll": {
+      "bytes": 2818986,
+      "sha256": "c48f31ed1cb3dbea30b1121a169dfcd9a4bdb0ed12b5b6fb20a006094a7480bf"
+    },
+    "liblz4.dll": {
+      "bytes": 187849,
+      "sha256": "4ec83678100682f0be6ba31e1e642332caa53b2efcee2c201b7cab0788d1260f"
+    },
+    "liblzma-5.dll": {
+      "bytes": 190872,
+      "sha256": "d97a260b8bb4f6affc34ec47249429240068b94bb6f7dc30c4d64daaafb3ac69"
+    },
+    "libnghttp2-14.dll": {
+      "bytes": 213153,
+      "sha256": "5e5460b1f9dd489566a747f7fb72bcc7862608213e1cc401e02a9ee0f1866da1"
+    },
+    "libnghttp3-9.dll": {
+      "bytes": 203451,
+      "sha256": "30ed479b0ae35b56bd79c816e2b9010f2d0a9f84c96b0a210d44e188e9222f1e"
+    },
+    "libngtcp2-16.dll": {
+      "bytes": 391446,
+      "sha256": "099bdd982e4c6ec0fc04dd00ebaa9fb8bc090cc5521175cceb7c66ea5b5b4aea"
+    },
+    "libngtcp2_crypto_ossl-0.dll": {
+      "bytes": 51580,
+      "sha256": "9ce610fc3d42e4d82e8242a71feace273f5e305fb551d2f6d6b09861362ebec9"
+    },
+    "libopenjp2-7.dll": {
+      "bytes": 517286,
+      "sha256": "94f9507828d391cf96d700d34918114f1c1e03f91dd1243a19275e0435690925"
+    },
+    "libpng16-16.dll": {
+      "bytes": 254777,
+      "sha256": "28db7a8c6fcc579ce621729d27f1952324cd3a2b4e24da121611bb586346e732"
+    },
+    "libpsl-5.dll": {
+      "bytes": 105846,
+      "sha256": "a531e72de3c64d43fb83cbfb6fa63e5ee982a970292ec51314e29d0acabf1dd5"
+    },
+    "libsharpyuv-0.dll": {
+      "bytes": 48938,
+      "sha256": "d29380c7056383f3e7a80bf9e150f0b8c425c1cf2568d1336e88979ddc2307af"
+    },
+    "libssh2-1.dll": {
+      "bytes": 336426,
+      "sha256": "682fd57a3d16f00f26025d01672d7ec3bfc4b1694c35e90b7b1ffc321c0fa5aa"
+    },
+    "libssl-4-x64.dll": {
+      "bytes": 1148375,
+      "sha256": "879b67699f587b4e1c5ce23c444f587f01a4fbe10f0cdf0374414e37bd606331"
+    },
+    "libstdc++-6.dll": {
+      "bytes": 2659194,
+      "sha256": "098e4964e3c8179847f7a1c313d2e8020ca12df3f1d18878a417a8f54d41505a"
+    },
+    "libtesseract-5.5.dll": {
+      "bytes": 4294548,
+      "sha256": "9a6e139504f3dbbc5db5aa3ed87c8fa641c7f9b4a6d7f0899cda2a381d48d704"
+    },
+    "libtiff-6.dll": {
+      "bytes": 614318,
+      "sha256": "d047260c3d456f84a2f9cd801d3b57bee0357cade32724caf16006c64c5fe8ff"
+    },
+    "libunistring-5.dll": {
+      "bytes": 2256134,
+      "sha256": "ee39258fa1086269674a8179d3cfaf7c4e380ada14441b5dd9ed53d82d15c4e3"
+    },
+    "libwebp-7.dll": {
+      "bytes": 746378,
+      "sha256": "8dfe40c4e0abc90ddf18f080898987e01253d099b2b2d6daf7db521e55c00446"
+    },
+    "libwebpmux-3.dll": {
+      "bytes": 78875,
+      "sha256": "9bd85116a22923d648d6b0ad09f21d08df7bd3d8860b24a5b4a6d4ac788b7340"
+    },
+    "libwinpthread-1.dll": {
+      "bytes": 73308,
+      "sha256": "94a9a4e2fe27b4bc827a4b209e9deb4cc3dc34bc025df06b849144f9d4c588f8"
+    },
+    "libz-1.dll": {
+      "bytes": 148154,
+      "sha256": "934103c50623302548a1cf66fbc22f0029e4eb4556343252a505e2fc005e835f"
+    },
+    "libzstd.dll": {
+      "bytes": 1217412,
+      "sha256": "48368ab0ca622d0ec12f41ce85d91f22866bf5da92c77a69a06483564c93816c"
+    },
+    "licenses/TESSERACT-APACHE-2.0.txt": {
+      "bytes": 11560,
+      "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-brotli/LICENSE": {
+      "bytes": 1084,
+      "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-bzip2/LICENSE": {
+      "bytes": 1896,
+      "sha256": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-curl/COPYING": {
+      "bytes": 1088,
+      "sha256": "82f2f4427d6545ee5aaac4f0b80428da6cc8ba41c2cf5da3a03680ec327b9681"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-gettext-runtime/COPYING": {
+      "bytes": 65,
+      "sha256": "03133addae5b99a6148c538300e6d97074453089be1423b741bd081f18e2b298"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-gettext-runtime/COPYING.LIB": {
+      "bytes": 26419,
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-jbigkit/COPYING": {
+      "bytes": 17982,
+      "sha256": "91df39d1816bfb17a4dda2d3d2c83b1f6f2d38d53e53e41e8f97ad5ac46a0cad"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-leptonica/LICENSE": {
+      "bytes": 1521,
+      "sha256": "87829abb5bbb00b55a107365da89e9a33f86c4250169e5a1e5588505be7d5806"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-lerc/LICENSE": {
+      "bytes": 9198,
+      "sha256": "77a8b761727c75e2167b15bfdf61b2c0bcf8792271228bebe80779106ad00671"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libarchive/LICENSE": {
+      "bytes": 3089,
+      "sha256": "30e556b3959e3985d66efefec5eaac51d4995053caa1d3cffe6eb916f146f229"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libb2/LICENSE": {
+      "bytes": 6556,
+      "sha256": "6a1ee543e5282cd9061881edf462e6fdab181f328da71fc2c9a6950a80e94d01"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libdeflate/COPYING": {
+      "bytes": 1078,
+      "sha256": "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libgcc/COPYING.RUNTIME": {
+      "bytes": 3324,
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libgcc/COPYING3": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libgomp/COPYING.RUNTIME": {
+      "bytes": 3324,
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libgomp/COPYING3": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libiconv/COPYING": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libiconv/COPYING.LIB": {
+      "bytes": 26419,
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libiconv/README": {
+      "bytes": 5743,
+      "sha256": "ff0400ffb0c3dace1a64012f4125f292a3fef58c5b8486c7f9ba0c01a0637f3c"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libjpeg-turbo/LICENSE.md": {
+      "bytes": 6077,
+      "sha256": "ba6bceebcba0fdd35488477c2cca8c4632ce82c74dbfbc87d886ce6fc4433579"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libjpeg-turbo/README.ijg": {
+      "bytes": 12799,
+      "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libjpeg-turbo/README.md": {
+      "bytes": 17831,
+      "sha256": "bd71f6ebae1c151e4b5fe7072dc2cedcf33671fa40d91ad5f9058ecdc0b01721"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libjpeg-turbo/jsimdext.inc": {
+      "bytes": 15563,
+      "sha256": "68c5d236785edf75344cebe8b9bec36568bd35c96eb72cc67ffecd66c17dbd74"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libpng/LICENSE": {
+      "bytes": 5345,
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libpsl/COPYING": {
+      "bytes": 1060,
+      "sha256": "322392e6001b2b3b0fca705dc9f11f26e12441188ecde50eb1d22909980b2925"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libssh2/COPYING": {
+      "bytes": 1959,
+      "sha256": "f7f9633cf9ff2f1333f3d7ce46973a8716a4d2a2815ad56f30d437d5fea7bafe"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libstdc++/COPYING.RUNTIME": {
+      "bytes": 3324,
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libstdc++/COPYING3": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libtiff/LICENSE.md": {
+      "bytes": 2416,
+      "sha256": "0e27c2382d7b8147972bbb746e04059a1152c8d0fda9d03ef1399d1a433c4ade"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libunistring/LICENSE": {
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libunistring/LICENSE.LIB": {
+      "bytes": 7639,
+      "sha256": "a853c2ffec17057872340eee242ae4d96cbf2b520ae27d903e1b2fef1a5f9d1c"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libwebp/COPYING": {
+      "bytes": 1496,
+      "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-libwinpthread/COPYING": {
+      "bytes": 2883,
+      "sha256": "63263614cdd29f2f93cba85e992f041b31f9fc7b4033692f31269489a8a1b177"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-nghttp2/COPYING": {
+      "bytes": 1156,
+      "sha256": "6b94f3abc1aabd0c72a7c7d92a77f79dda7c8a0cb3df839a97890b4116a2de2a"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-nghttp3/COPYING": {
+      "bytes": 1081,
+      "sha256": "58cc3fc8c6d6cb2485ab35eb5918e849b5bf1e56522974e106d7a39a88d61dcd"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-ngtcp2/COPYING": {
+      "bytes": 1080,
+      "sha256": "542dd526d2ea23565f0571cc68df6f05ed11248a90ff0f32de19d8ba589db513"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-openjpeg2/LICENSE": {
+      "bytes": 2112,
+      "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-openssl/LICENSE": {
+      "bytes": 10175,
+      "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-tesseract-ocr/LICENSE": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-xz/COPYING": {
+      "bytes": 3119,
+      "sha256": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-xz/COPYING.0BSD": {
+      "bytes": 607,
+      "sha256": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-xz/COPYING.GPLv2": {
+      "bytes": 17984,
+      "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-xz/COPYING.GPLv3": {
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-xz/COPYING.LGPLv2.1": {
+      "bytes": 26419,
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-zlib/LICENSE": {
+      "bytes": 1002,
+      "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2"
+    },
+    "licenses/mingw-w64-ucrt-x86_64-zstd/LICENSE": {
+      "bytes": 1549,
+      "sha256": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8"
+    },
+    "tessdata/eng.traineddata": {
+      "bytes": 4113088,
+      "sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+    },
+    "tessdata/ind.traineddata": {
+      "bytes": 1122661,
+      "sha256": "69786901da87ab8766c1ea7fbb10b28f2110c14da3f6c8f2735df131fba95d88"
+    },
+    "tessdata/msa.traineddata": {
+      "bytes": 1747801,
+      "sha256": "e41a3e5febfec50c90371eb1cbb17a48b10cad387900e3420b1f134c1b766cba"
+    },
+    "tesseract.exe": {
+      "bytes": 85924,
+      "sha256": "1038246a7a73eb5c1be1816f36bbd0b375c5365136ecaab50be64d3385e673f4"
+    },
+    "zlib1.dll": {
+      "bytes": 190835,
+      "sha256": "aa658771fb152b095eda1614d8bde798efb92324b6f4a0c99c743cd96b67ac90"
+    }
+  },
+  "languages": [
+    "eng",
+    "msa",
+    "ind"
+  ],
+  "nativePackageVersions": {
+    "libLerc.dll": "mingw-w64-ucrt-x86_64-lerc 4.1.1-1",
+    "libarchive-13.dll": "mingw-w64-ucrt-x86_64-libarchive 3.8.11-3",
+    "libb2-1.dll": "mingw-w64-ucrt-x86_64-libb2 0.98.1-3",
+    "libbrotlicommon.dll": "mingw-w64-ucrt-x86_64-brotli 1.2.1-1",
+    "libbrotlidec.dll": "mingw-w64-ucrt-x86_64-brotli 1.2.1-1",
+    "libbz2-1.dll": "mingw-w64-ucrt-x86_64-bzip2 1.0.8-4",
+    "libcrypto-4-x64.dll": "mingw-w64-ucrt-x86_64-openssl 4.1.0-1",
+    "libcurl-4.dll": "mingw-w64-ucrt-x86_64-curl 8.23.0-3",
+    "libdeflate.dll": "mingw-w64-ucrt-x86_64-libdeflate 1.26-1",
+    "libgcc_s_seh-1.dll": "mingw-w64-ucrt-x86_64-libgcc 16.2.0-7",
+    "libgif-7.dll": "mingw-w64-ucrt-x86_64-giflib 6.1.3-1",
+    "libgomp-1.dll": "mingw-w64-ucrt-x86_64-libgomp 16.2.0-7",
+    "libiconv-2.dll": "mingw-w64-ucrt-x86_64-libiconv 1.19.1-1",
+    "libidn2-0.dll": "mingw-w64-ucrt-x86_64-libidn2 2.3.8-5",
+    "libintl-8.dll": "mingw-w64-ucrt-x86_64-gettext-runtime 1.0-1",
+    "libjbig-0.dll": "mingw-w64-ucrt-x86_64-jbigkit 2.1-6",
+    "libjpeg-8.dll": "mingw-w64-ucrt-x86_64-libjpeg-turbo 3.2.1-1",
+    "libleptonica-6.dll": "mingw-w64-ucrt-x86_64-leptonica 1.87.0-2",
+    "liblz4.dll": "mingw-w64-ucrt-x86_64-lz4 1.11.1-2",
+    "liblzma-5.dll": "mingw-w64-ucrt-x86_64-xz 5.8.4-1",
+    "libnghttp2-14.dll": "mingw-w64-ucrt-x86_64-nghttp2 1.71.0-1",
+    "libnghttp3-9.dll": "mingw-w64-ucrt-x86_64-nghttp3 1.19.0-1",
+    "libngtcp2-16.dll": "mingw-w64-ucrt-x86_64-ngtcp2 1.26.0-3",
+    "libngtcp2_crypto_ossl-0.dll": "mingw-w64-ucrt-x86_64-ngtcp2 1.26.0-3",
+    "libopenjp2-7.dll": "mingw-w64-ucrt-x86_64-openjpeg2 2.5.4-2",
+    "libpng16-16.dll": "mingw-w64-ucrt-x86_64-libpng 1.6.59-2",
+    "libpsl-5.dll": "mingw-w64-ucrt-x86_64-libpsl 0.21.5-3",
+    "libsharpyuv-0.dll": "mingw-w64-ucrt-x86_64-libwebp 1.6.0-1",
+    "libssh2-1.dll": "mingw-w64-ucrt-x86_64-libssh2 1.11.1-4",
+    "libssl-4-x64.dll": "mingw-w64-ucrt-x86_64-openssl 4.1.0-1",
+    "libstdc++-6.dll": "mingw-w64-ucrt-x86_64-libstdc++ 16.2.0-7",
+    "libtesseract-5.5.dll": "mingw-w64-ucrt-x86_64-tesseract-ocr 5.5.4-1",
+    "libtiff-6.dll": "mingw-w64-ucrt-x86_64-libtiff 4.7.2-2",
+    "libunistring-5.dll": "mingw-w64-ucrt-x86_64-libunistring 1.4.2-1",
+    "libwebp-7.dll": "mingw-w64-ucrt-x86_64-libwebp 1.6.0-1",
+    "libwebpmux-3.dll": "mingw-w64-ucrt-x86_64-libwebp 1.6.0-1",
+    "libwinpthread-1.dll": "mingw-w64-ucrt-x86_64-libwinpthread 14.0.0.r598.ge3d18511f-1",
+    "libz-1.dll": "mingw-w64-ucrt-x86_64-zlib 1.4-2",
+    "libzstd.dll": "mingw-w64-ucrt-x86_64-zstd 1.5.7-2",
+    "tesseract.exe": "mingw-w64-ucrt-x86_64-tesseract-ocr 5.5.4-1",
+    "zlib1.dll": "mingw-w64-ucrt-x86_64-zlib 1.4-2"
+  },
+  "packages": {
+    "mingw-w64-ucrt-x86_64-brotli": "mingw-w64-ucrt-x86_64-brotli 1.2.1-1",
+    "mingw-w64-ucrt-x86_64-bzip2": "mingw-w64-ucrt-x86_64-bzip2 1.0.8-4",
+    "mingw-w64-ucrt-x86_64-curl": "mingw-w64-ucrt-x86_64-curl 8.23.0-3",
+    "mingw-w64-ucrt-x86_64-gettext-runtime": "mingw-w64-ucrt-x86_64-gettext-runtime 1.0-1",
+    "mingw-w64-ucrt-x86_64-giflib": "mingw-w64-ucrt-x86_64-giflib 6.1.3-1",
+    "mingw-w64-ucrt-x86_64-jbigkit": "mingw-w64-ucrt-x86_64-jbigkit 2.1-6",
+    "mingw-w64-ucrt-x86_64-leptonica": "mingw-w64-ucrt-x86_64-leptonica 1.87.0-2",
+    "mingw-w64-ucrt-x86_64-lerc": "mingw-w64-ucrt-x86_64-lerc 4.1.1-1",
+    "mingw-w64-ucrt-x86_64-libarchive": "mingw-w64-ucrt-x86_64-libarchive 3.8.11-3",
+    "mingw-w64-ucrt-x86_64-libb2": "mingw-w64-ucrt-x86_64-libb2 0.98.1-3",
+    "mingw-w64-ucrt-x86_64-libdeflate": "mingw-w64-ucrt-x86_64-libdeflate 1.26-1",
+    "mingw-w64-ucrt-x86_64-libgcc": "mingw-w64-ucrt-x86_64-libgcc 16.2.0-7",
+    "mingw-w64-ucrt-x86_64-libgomp": "mingw-w64-ucrt-x86_64-libgomp 16.2.0-7",
+    "mingw-w64-ucrt-x86_64-libiconv": "mingw-w64-ucrt-x86_64-libiconv 1.19.1-1",
+    "mingw-w64-ucrt-x86_64-libidn2": "mingw-w64-ucrt-x86_64-libidn2 2.3.8-5",
+    "mingw-w64-ucrt-x86_64-libjpeg-turbo": "mingw-w64-ucrt-x86_64-libjpeg-turbo 3.2.1-1",
+    "mingw-w64-ucrt-x86_64-libpng": "mingw-w64-ucrt-x86_64-libpng 1.6.59-2",
+    "mingw-w64-ucrt-x86_64-libpsl": "mingw-w64-ucrt-x86_64-libpsl 0.21.5-3",
+    "mingw-w64-ucrt-x86_64-libssh2": "mingw-w64-ucrt-x86_64-libssh2 1.11.1-4",
+    "mingw-w64-ucrt-x86_64-libstdc++": "mingw-w64-ucrt-x86_64-libstdc++ 16.2.0-7",
+    "mingw-w64-ucrt-x86_64-libtiff": "mingw-w64-ucrt-x86_64-libtiff 4.7.2-2",
+    "mingw-w64-ucrt-x86_64-libunistring": "mingw-w64-ucrt-x86_64-libunistring 1.4.2-1",
+    "mingw-w64-ucrt-x86_64-libwebp": "mingw-w64-ucrt-x86_64-libwebp 1.6.0-1",
+    "mingw-w64-ucrt-x86_64-libwinpthread": "mingw-w64-ucrt-x86_64-libwinpthread 14.0.0.r598.ge3d18511f-1",
+    "mingw-w64-ucrt-x86_64-lz4": "mingw-w64-ucrt-x86_64-lz4 1.11.1-2",
+    "mingw-w64-ucrt-x86_64-nghttp2": "mingw-w64-ucrt-x86_64-nghttp2 1.71.0-1",
+    "mingw-w64-ucrt-x86_64-nghttp3": "mingw-w64-ucrt-x86_64-nghttp3 1.19.0-1",
+    "mingw-w64-ucrt-x86_64-ngtcp2": "mingw-w64-ucrt-x86_64-ngtcp2 1.26.0-3",
+    "mingw-w64-ucrt-x86_64-openjpeg2": "mingw-w64-ucrt-x86_64-openjpeg2 2.5.4-2",
+    "mingw-w64-ucrt-x86_64-openssl": "mingw-w64-ucrt-x86_64-openssl 4.1.0-1",
+    "mingw-w64-ucrt-x86_64-tesseract-ocr": "mingw-w64-ucrt-x86_64-tesseract-ocr 5.5.4-1",
+    "mingw-w64-ucrt-x86_64-xz": "mingw-w64-ucrt-x86_64-xz 5.8.4-1",
+    "mingw-w64-ucrt-x86_64-zlib": "mingw-w64-ucrt-x86_64-zlib 1.4-2",
+    "mingw-w64-ucrt-x86_64-zstd": "mingw-w64-ucrt-x86_64-zstd 1.5.7-2"
+  },
+  "source": "MSYS2 official UCRT64 packages",
+  "target": "Windows-x64 (UCRT64)"
+}
