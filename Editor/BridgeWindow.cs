@@ -128,6 +128,8 @@ namespace WasimDevelopment.UnityMcpBridge
             int timeout = EditorGUILayout.IntSlider("Tool timeout (seconds)", BridgePreferences.ToolRequestTimeoutSeconds, 10, 120);
             string powershell = EditorGUILayout.TextField("PowerShell executable", BridgePreferences.PowerShellExecutablePath);
             string ngrok = EditorGUILayout.TextField("ngrok executable", BridgePreferences.NgrokExecutablePath);
+            string tesseract = EditorGUILayout.TextField("Tesseract OCR executable", BridgePreferences.TesseractExecutablePath);
+            EditorGUILayout.HelpBox("Local image OCR requires Tesseract. Use tesseract (PATH) or a full path to tesseract.exe; language packs include eng and optionally msa/ind.", MessageType.None);
             string stable = EditorGUILayout.TextField("Optional stable ngrok URL", BridgePreferences.StableNgrokUrl);
 
             bool changed = autoStart != BridgePreferences.AutoStart
@@ -138,6 +140,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 || timeout != BridgePreferences.ToolRequestTimeoutSeconds
                 || powershell != BridgePreferences.PowerShellExecutablePath
                 || ngrok != BridgePreferences.NgrokExecutablePath
+                || tesseract != BridgePreferences.TesseractExecutablePath
                 || stable != BridgePreferences.StableNgrokUrl;
 
             if (changed)
@@ -150,6 +153,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 BridgePreferences.ToolRequestTimeoutSeconds = timeout;
                 BridgePreferences.PowerShellExecutablePath = powershell;
                 BridgePreferences.NgrokExecutablePath = ngrok;
+                BridgePreferences.TesseractExecutablePath = tesseract;
                 BridgePreferences.StableNgrokUrl = stable;
                 CompanionIpc.WriteConfig();
                 _message = "Settings saved. Restart the companion to apply port or ngrok changes.";
