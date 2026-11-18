@@ -36,12 +36,12 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
-        public void Phase7CatalogContainsExactly48UniqueTools()
+        public void Phase7CatalogContainsExactly49UniqueTools()
         {
             JArray tools = McpToolCatalog.Build();
             string[] names = tools.Select(x => (string)x["name"]).ToArray();
-            Assert.AreEqual(48, names.Length, "The advertised MCP surface changed.");
-            Assert.AreEqual(48, names.Distinct(StringComparer.Ordinal).Count());
+            Assert.AreEqual(49, names.Length, "The advertised MCP surface changed.");
+            Assert.AreEqual(49, names.Distinct(StringComparer.Ordinal).Count());
             Assert.IsTrue(names.All(x => x.StartsWith("unity_", StringComparison.Ordinal)));
         }
 
@@ -120,7 +120,7 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 "unity_create_canvas", "unity_create_ui", "unity_set_rect_transform",
                 "unity_inspect_ui", "unity_set_ui_property", "unity_set_ui_layout",
                 "unity_bind_button_event", "unity_delete_gameobject",
-                "unity_propose_animator_controller_edit", "unity_inspect_animator_controller"
+                "unity_propose_animator_controller_edit", "unity_inspect_animator_controller", "unity_read_image_text"
             };
             HashSet<string> available = new HashSet<string>(
                 McpToolCatalog.Build().Select(x => (string)x["name"]),
@@ -135,7 +135,7 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 "unity_get_status", "unity_read_script", "unity_get_active_scene",
                 "unity_read_console", "unity_inspect_ui", "unity_inspect_runtime",
                 "unity_get_change_sets", "unity_get_test_results",
-                "unity_inspect_animator_controller"
+                "unity_inspect_animator_controller", "unity_read_image_text"
             })
             {
                 JObject hints = (JObject)Phase7CatalogTool(name)["annotations"];
@@ -157,12 +157,12 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         }
 
         [Test]
-        public void Phase7StatusAdvertisesSame48ToolsAsCatalog()
+        public void Phase7StatusAdvertisesSame49ToolsAsCatalog()
         {
             JObject status = (JObject)UnityToolExecutor.Execute(
                 "unity_get_status", new JObject());
             Assert.AreEqual("0.5.2", (string)status["bridgeVersion"]);
-            Assert.AreEqual(48, (int)status["advertisedToolCount"]);
+            Assert.AreEqual(49, (int)status["advertisedToolCount"]);
             CollectionAssert.AreEquivalent(
                 McpToolCatalog.Build().Select(x => (string)x["name"]).ToArray(),
                 ((JArray)status["advertisedTools"]).Values<string>().ToArray());
