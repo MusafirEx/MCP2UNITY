@@ -12,6 +12,7 @@ namespace WasimDevelopment.UnityMcpBridge
             {
                 case "unity_inspect_runtime": return RuntimeInspection.Inspect(args);
                 case "unity_capture_view": return ViewCapture.Capture(args);
+                case "unity_read_image_text": return ImageTextReader.Read(args);
                 case "unity_propose_change_set": return ChangeSets.Propose(args);
                 case "unity_set_transform": return TransformChangeTool.Propose(args);
                 case "unity_create_canvas": return UiChangeTool.ProposeCanvas(args);
