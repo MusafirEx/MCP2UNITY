@@ -1,8 +1,8 @@
 {
   "name": "com.musafirex.mcp2unity",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "displayName": "MCP2UNITY",
-  "description": "Unity 2022.3 MCP companion with v0.5.1 transport and opt-in modular v0.6.0 inspection, review and diagnostics tools.",
+  "description": "MCP2UNITY v0.5.4 | 49 MCP tools for Unity 2022.3 Editor. Local Tesseract 5.5.4 OCR (Windows x64, eng/msa/ind), Animator Controller read/edit with guarded Unity approval, script/scene/UI inspection and reviewed changes, diagnostics, profiler and tests. Changes need local Unity approval where applicable.\n\nComplete list of 49 MCP tools:\nBridge, project & logs (6): unity_get_status, unity_get_project_info, unity_get_compilation_status, unity_read_console, unity_read_editor_log, unity_get_packages\nScripts & assets (6): unity_search_scripts, unity_find_script_references, unity_read_script, unity_get_selected_script, unity_get_selected_asset_info, unity_analyze_selected_folder\nScene, objects & runtime (6): unity_get_active_scene, unity_inspect_selected_object, unity_inspect_selected_hierarchy, unity_inspect_selected_prefab, unity_inspect_runtime, unity_check_runtime\nAnimator Controller (3): unity_inspect_animator_controller, unity_get_animator_info, unity_propose_animator_controller_edit\nImage & OCR (2): unity_capture_view, unity_read_image_text\nScript, scene & UI review/editing (15): unity_get_script_change_proposals, unity_propose_script_text_patch, unity_propose_script_replacement, unity_propose_change_set, unity_get_change_sets, unity_propose_change_set_rollback, unity_set_transform, unity_create_canvas, unity_create_ui, unity_set_rect_transform, unity_set_ui_property, unity_set_ui_layout, unity_bind_button_event, unity_delete_gameobject, unity_inspect_ui\nDiagnostics & profiling (8): unity_start_trace, unity_read_trace, unity_stop_trace, unity_validate_vrchat, unity_find_asset_references, unity_start_profiler, unity_read_profiler, unity_stop_profiler\nEditor actions & testing (3): unity_propose_editor_action, unity_get_editor_actions, unity_get_test_results",
   "unity": "2022.3",
   "author": {
     "name": "MusafirEx / Wasim Development"
@@ -23,6 +23,14 @@
     "prefab",
     "animator",
     "code-review",
-    "folder-analysis"
-  ]
+    "folder-analysis",
+    "ocr",
+    "tesseract",
+    "animator-controller",
+    "unity-mcp",
+    "editmode"
+  ],
+  "documentationUrl": "https://github.com/MusafirEx/MCP2UNITY/blob/main/README.md",
+  "changelogUrl": "https://github.com/MusafirEx/MCP2UNITY/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/MusafirEx/MCP2UNITY/blob/main/LICENSE.md"
 }
