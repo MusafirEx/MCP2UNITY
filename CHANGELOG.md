@@ -1,3 +1,11 @@
+## MCP2UNITY v0.5.4 — OCR + Animator Controller (2026-11-19)
+
+- **Release metadata:** Bumped `package.json` and `Editor/BridgeVersion.cs` from **0.5.2 to 0.5.4**. Aligned the Unity Editor contract tests, package-reader test and Windows companion test fixture.
+- **UPM description:** Includes the complete advertised **49-tool** MCP catalog, organized into eight functional groups, with package documentation, changelog and license links. The same grouped list is mirrored in `README.md`.
+- **Animator Controller:** `unity_inspect_animator_controller` and `unity_get_animator_info` inspect a nested Animator graph, while `unity_propose_animator_controller_edit` proposes hash-guarded, reviewed controller changes (up to 50 actions per proposal). Controller edits remain subject to local Unity approval and backup/rollback.
+- **Built-in OCR:** `unity_read_image_text` uses bundled Tesseract **5.5.4 Windows x64** under `Tools~/OCR/win-x64/`, with English (`eng`), Malay (`msa`) and Indonesian (`ind`) traineddata. MSYS2 dependency DLLs, license files and a SHA-256 manifest are included. A configured/system Tesseract remains the fallback where the bundle is unavailable.
+- **Verification:** The native engine packaging and offline real-image OCR smoke test **PASSED** in [GitHub Actions run 44417916862](https://github.com/MusafirEx/MCP2UNITY/actions/runs/44417916862). The previous 48-tool build passed **237/237 Unity EditMode tests** on 2026-11-17. **The new v0.5.4 49-tool build has not yet been recompiled and tested in the connected Unity Editor** after its UPM refresh; do not confuse the native smoke result with in-Editor validation.
+
 ## Local image OCR and portable Windows engine (2026-11-19 — native CI PASSED, Unity validation pending)
 
 - Added the **49th MCP tool**, `unity_read_image_text`, to extract text from selected Project image assets, `Assets/` image files, and Scene/Game View captures. `source=check` reports whether the optional, separately installed **Tesseract OCR** is available. Supports `eng`, `msa` and other installed language packs; page-segmentation options, bounded output, safe path handling and cleanup of temporary captured screenshots.
