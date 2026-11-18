@@ -20,7 +20,8 @@ import pefile
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE_ROOT = Path(os.environ.get("MSYS2_UCRT64_ROOT", r"C:\msys64\ucrt64"))
+DEFAULT_MSYS2_HOME = Path(os.environ.get("RUNNER_TEMP", r"C:\\")) / "msys64"
+SOURCE_ROOT = Path(os.environ.get("MSYS2_UCRT64_ROOT", str(DEFAULT_MSYS2_HOME / "ucrt64")))
 BIN = SOURCE_ROOT / "bin"
 SOURCE_DATA = SOURCE_ROOT / "share" / "tessdata"
 DEST = ROOT / "Tools~" / "OCR" / "win-x64"
