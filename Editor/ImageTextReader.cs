@@ -197,11 +197,20 @@ namespace WasimDevelopment.UnityMcpBridge
             string root = Path.GetFullPath(package.resolvedPath);
             string directory = Path.Combine(root, "Tools~", "OCR", "win-x64");
             string executable = Path.Combine(directory, "tesseract.exe");
-            string models = Path.Combine(directory, "tessdata", "eng.traineddata");
-            if (!File.Exists(executable) || !File.Exists(models))
+            string manifest = Path.Combine(directory, "bundle-manifest.json");
+            string data = Path.Combine(directory, "tessdata");
+            if (!File.Exists(executable) || !File.Exists(manifest))
                 return null;
+            // A partially staged bundle must never be advertised as ready.
+            foreach (string language in new[] { "eng", "msa", "ind" })
+            {
+                string model = Path.Combine(data, language + ".traineddata");
+                if (!File.Exists(model) ||
+                    (File.GetAttributes(model) & FileAttributes.ReparsePoint) != 0)
+                    return null;
+            }
             if ((File.GetAttributes(executable) & FileAttributes.ReparsePoint) != 0 ||
-                (File.GetAttributes(models) & FileAttributes.ReparsePoint) != 0)
+                (File.GetAttributes(manifest) & FileAttributes.ReparsePoint) != 0)
                 return null;
             return directory;
         }
