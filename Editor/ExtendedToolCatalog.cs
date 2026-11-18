@@ -46,7 +46,7 @@ namespace WasimDevelopment.UnityMcpBridge
                     P("source", Enum("check", "selected", "asset", "scene", "game")),
                     P("path", Str()),
                     P("language", Str()),
-                    P("pageSegmentation", Int(6, 3, 11)),
+                    P("pageSegmentation", new JObject { ["type"] = "integer", ["enum"] = new JArray(3, 6, 7, 11), ["default"] = 6 }),
                     P("maximumCharacters", Int(4000, 100, 16000)),
                     P("width", Int(1280, 64, 1280)),
                     P("height", Int(720, 64, 1280)))));
