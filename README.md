@@ -1,13 +1,15 @@
 # MCP2UNITY
 
+**Current release: v0.5.4 (49 MCP tools)** — Unity 2022.3 LTS / Windows PowerShell MCP companion. Integrates bundled Windows-x64 Tesseract OCR and reviewed Animator Controller editing.
+
 > **Portable OCR upgrade on `main` (2026-11-19, native engine CI verified; Unity Editor validation pending):** Now **49 MCP tools**, including `unity_read_image_text` for local OCR of selected images, `Assets/` images and Scene/Game View captures. Windows x64 prioritizes Tesseract bundled into `Tools~/OCR/win-x64` by a GitHub Actions native build; **the validated binaries are now tracked on `main`** (Tesseract 5.5.4, 37.0 MiB including dependencies and languages). External Tesseract remains a fallback on unsupported platforms. Use `source=check` for availability; no image is uploaded to an OCR service. **GitHub Actions run 44417916862 PASSED an isolated executable/language/real-image OCR smoke test and committed the portable files. The previous 237/237 Unity EditMode run does not validate this newer 49-tool build.** See [OCR setup and usage](Documentation~/IMAGE_OCR.md).
 
 > **Animator Controller upgrade on `main` (2026-11-17, verified EditMode):** The catalog now provides **48 MCP tools**, including `unity_propose_animator_controller_edit` for reviewed parameter/state/transition changes, and `unity_inspect_animator_controller` supports `controllerPath` and asset SHA-256. All edits require local Unity Change Sets approval, file-hash guards, backup and rollback. After UPM refresh the full EditMode suite **PASSED 237/237** (0 failed/skipped/inconclusive, action `7005c2d43ed7`), with 48 tools advertised and no compilation errors. Gameplay Animator behavior still requires Play Mode verification. See [Animator Controller documentation](Documentation~/ANIMATOR_CONTROLLER.md).
 
 
-**Version: 0.5.2 (experimental backport)** | **Unity: 2022.3 LTS (validated on 2022.3.62f3)** | **Windows PowerShell companion**
+**Version: 0.5.4 (49-tool OCR + Animator release)** | **Unity: 2022.3 LTS (validated on 2022.3.62f3)** | **Windows PowerShell companion**
 
-> **Latest validation (2026-11-10, PR #4):** Unity EditMode suite **160/160 passed** (0 failed, skipped or inconclusive; 55.21 seconds) after the target-scene EventSystem fix merged into `main`. Reviewed action `c0a81ff40d63`; no console errors, scene saved/clean. See [CHANGELOG](CHANGELOG.md).
+> **Historical validation (2026-11-10, PR #4):** Unity EditMode suite **160/160 passed** (0 failed, skipped or inconclusive; 55.21 seconds) after the target-scene EventSystem fix merged into `main`. Reviewed action `c0a81ff40d63`; no console errors, scene saved/clean. See [CHANGELOG](CHANGELOG.md).
 
 MCP2UNITY restarts the original Wasim Unity MCP Bridge from its **v0.5.1** source instead of upgrading the transport to v0.6.0. The v0.5.1 standalone PowerShell companion and its Unity Editor file-IPC architecture are retained; 17 optional tools from v0.6.0 are backported into separate Editor modules. The original validated surface had 21 tools + 17 backported tools + 1 reviewed Transform tool + 8 uGUI tools = **47**; the reviewed Animator Controller editing tool brought the catalog to 48, and the new image OCR tool brings current `main` to **49 advertised MCP tools**.
 
@@ -48,9 +50,29 @@ The tool catalog is visible only when the companion and Unity IPC are running. I
 | uGUI Canvas, element creation, RectTransform editing and hierarchy inspection (phase 1) | 4 |
 | Reviewed uGUI styling / LayoutGroup configuration (phase 2) | 2 |
 | Advanced uGUI controls, guarded GameObject deletion and Button event binding (phase 3) | 2 |
+| Reviewed Animator Controller changes | 1 |
+| Local image OCR via bundled Tesseract | 1 |
 | **Advertised total (current `main`)** | **49** |
 
 See [the 17 backported tool specifications](Documentation~/TOOLS_V060.md) and [the backport matrix](Documentation~/BACKPORT_MATRIX.md).
+
+## Full MCP tool catalog (49 tools)
+
+The following list is mirrored **verbatim by tool name** in Unity Package Manager's `package.json` description. These are the tools advertised by the MCP bridge after updating to **v0.5.4** (some operations require local Unity approval).
+
+| Category | Count | MCP tool names |
+| --- | ---: | --- |
+| **Bridge, project & logs** | 6 | `unity_get_status`, `unity_get_project_info`, `unity_get_compilation_status`, `unity_read_console`, `unity_read_editor_log`, `unity_get_packages` |
+| **Scripts & assets** | 6 | `unity_search_scripts`, `unity_find_script_references`, `unity_read_script`, `unity_get_selected_script`, `unity_get_selected_asset_info`, `unity_analyze_selected_folder` |
+| **Scene, objects & runtime** | 6 | `unity_get_active_scene`, `unity_inspect_selected_object`, `unity_inspect_selected_hierarchy`, `unity_inspect_selected_prefab`, `unity_inspect_runtime`, `unity_check_runtime` |
+| **Animator Controller** | 3 | `unity_inspect_animator_controller`, `unity_get_animator_info`, `unity_propose_animator_controller_edit` |
+| **Image & OCR** | 2 | `unity_capture_view`, `unity_read_image_text` |
+| **Script, scene & UI review/editing** | 15 | `unity_get_script_change_proposals`, `unity_propose_script_text_patch`, `unity_propose_script_replacement`, `unity_propose_change_set`, `unity_get_change_sets`, `unity_propose_change_set_rollback`, `unity_set_transform`, `unity_create_canvas`, `unity_create_ui`, `unity_set_rect_transform`, `unity_set_ui_property`, `unity_set_ui_layout`, `unity_bind_button_event`, `unity_delete_gameobject`, `unity_inspect_ui` |
+| **Diagnostics & profiling** | 8 | `unity_start_trace`, `unity_read_trace`, `unity_stop_trace`, `unity_validate_vrchat`, `unity_find_asset_references`, `unity_start_profiler`, `unity_read_profiler`, `unity_stop_profiler` |
+| **Editor actions & testing** | 3 | `unity_propose_editor_action`, `unity_get_editor_actions`, `unity_get_test_results` |
+| **TOTAL** | **49** | Read, diagnostics, OCR, reviewed editing and test tools |
+
+**Key capabilities:** `unity_read_image_text` uses the bundled **Tesseract 5.5.4** on Windows x64 with `eng`, `msa` and `ind` models (local OCR; output text is sent to the MCP client). `unity_inspect_animator_controller` reads Animator parameters and nested states/transitions, while `unity_propose_animator_controller_edit` submits SHA-256-guarded changes for approval in Unity. See [OCR guide](Documentation~/IMAGE_OCR.md) and [Animator editing guide](Documentation~/ANIMATOR_CONTROLLER.md).
 
 ### Change sets and Editor actions
 
