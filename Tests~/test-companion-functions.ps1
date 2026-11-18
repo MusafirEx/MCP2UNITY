@@ -19,7 +19,7 @@ $Script:Config = [pscustomobject]@{
     catalogPath = (Join-Path $folder 'catalog.json')
     companionLogPath = (Join-Path $folder 'companion.log')
     requestTimeoutSeconds = 2
-    companionVersion = '0.5.2'
+    companionVersion = '0.5.4'
     capabilityToken = 'local-test'
     port = 38421
 }
