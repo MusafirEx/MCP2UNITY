@@ -1,6 +1,6 @@
 # MCP2UNITY local image OCR
 
-**Implementation on `main` (2026-11-19):** Adds MCP tool `unity_read_image_text` (49th advertised tool). **Unity Editor compilation and real-image end-to-end OCR are pending verification after a Git UPM update.** The earlier 237/237 EditMode result belongs to the previous 48-tool build.
+**Native engine implemented and verified on `main` (2026-11-19):** `unity_read_image_text` is the 49th advertised MCP tool. [Windows CI run 44417916862](https://github.com/MusafirEx/MCP2UNITY/actions/runs/44417916862) passed portable Tesseract **5.5.4** binary, three languages, and isolated real-image OCR smoke test and committed **37.0 MiB** into the Git UPM package. **Unity Editor compilation and in-Editor OCR remain pending after UPM update.** The earlier 237/237 EditMode result belongs to the previous 48-tool build.
 
 ## Engine and privacy
 
@@ -16,7 +16,7 @@ The native vendor files are built by [GitHub Actions](../.github/workflows/bundl
 
 The first supported native target is **Windows x64 Editor only**. Non-Windows Unity installations and revisions before the binary bundle has been committed retain the existing explicit/system-engine fallback. No binaries are downloaded or installed at Unity runtime. The local executable setting in Unity MCP Bridge remains available for fallback; when the bundled version exists, it takes priority.
 
-**Deployment check:** verify the actual `Tools~/OCR/win-x64/tesseract.exe` and `bundle-manifest.json` are present on `main`. Merely adding a CI workflow does not ship an executable; successful CI completion and a UPM update to a revision containing the committed binaries are required.
+**Deployment check (passed):** `Tools~/OCR/win-x64/tesseract.exe`, `tessdata/eng.traineddata`, `msa.traineddata`, `ind.traineddata` and `bundle-manifest.json` are present on `main`, verified after the CI commit. UPM must still be updated to a revision containing those committed binaries.
 
 ## Supported sources
 
