@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -50,12 +51,13 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             string description = (string)upm["description"];
             Assert.IsFalse(string.IsNullOrWhiteSpace(description));
             Assert.IsTrue(description.Contains("49 MCP tools"), "UPM must advertise all tools.");
-            foreach (JObject tool in McpToolCatalog.Build().OfType<JObject>())
-            {
-                string name = (string)tool["name"];
-                Assert.IsTrue(description.Contains(name),
-                    name + " is missing from the Unity Package Manager description.");
-            }
+            string[] advertised = McpToolCatalog.Build().OfType<JObject>()
+                .Select(tool => (string)tool["name"]).ToArray();
+            string[] described = Regex.Matches(description, @"\bunity_[a-z0-9_]+\b")
+                .Cast<Match>().Select(match => match.Value).ToArray();
+            Assert.AreEqual(49, described.Length, "UPM description must list 49 tool identifiers.");
+            CollectionAssert.AreEquivalent(advertised, described,
+                "UPM description must list every advertised tool exactly once.");
         }
 
         [Test]
