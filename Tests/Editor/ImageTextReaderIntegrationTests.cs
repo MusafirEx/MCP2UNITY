@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -31,6 +32,20 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
             Assert.AreEqual("Tesseract (local only)", (string)check["engine"]);
             Assert.AreEqual(JTokenType.Boolean, check["available"].Type);
             Assert.IsNotEmpty((string)check["setup"]);
+        }
+
+        [Test]
+        public void ImageOcrBundleResolutionIsReadOnlyAndChecksRequiredFiles()
+        {
+            string bundled = ImageTextReader.GetBundledOcrDirectory();
+            if (bundled == null)
+                Assert.Pass("Native OCR binary not yet vendored or not on Windows-x64.");
+            Assert.IsTrue(File.Exists(Path.Combine(bundled, "tesseract.exe")));
+            Assert.IsTrue(File.Exists(Path.Combine(bundled, "tessdata", "eng.traineddata")));
+            JObject check = (JObject)UnityToolExecutor.Execute("unity_read_image_text",
+                new JObject { ["source"] = "check" });
+            Assert.AreEqual("bundled-windows-x64", (string)check["provider"]);
+            Assert.IsTrue((bool)check["bundledAvailable"]);
         }
 
         [Test]
