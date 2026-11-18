@@ -97,7 +97,7 @@ namespace WasimDevelopment.UnityMcpBridge
 
                 string stdout, stderr;
                 int exitCode = Run(executable, Quote(imageFile) + " stdout -l " +
-                    language + " --psm " + psm + " quiet",
+                    language + " --psm " + psm,
                     OcrTimeoutMilliseconds, out stdout, out stderr);
                 if (exitCode != 0)
                     throw new InvalidOperationException(
