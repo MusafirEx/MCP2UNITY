@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 using UnityEngine;
 
 namespace WasimDevelopment.UnityMcpBridge
@@ -31,7 +32,12 @@ namespace WasimDevelopment.UnityMcpBridge
         {
             string source = (string)args["source"] ?? "selected";
             ValidateSource(source);
-            string executable = ResolveExecutable();
+            string bundleDirectory = GetBundledOcrDirectory();
+            string executable = ResolveExecutable(bundleDirectory);
+            bool bundled = bundleDirectory != null &&
+                string.Equals(executable, Path.Combine(bundleDirectory, "tesseract.exe"),
+                    StringComparison.OrdinalIgnoreCase);
+            string tessdata = bundled ? Path.Combine(bundleDirectory, "tessdata") : null;
             if (source == "check")
             {
                 string version;
@@ -39,12 +45,14 @@ namespace WasimDevelopment.UnityMcpBridge
                 return new JObject
                 {
                     ["engine"] = "Tesseract (local only)",
+                    ["provider"] = bundled ? "bundled-windows-x64" : "external-fallback",
+                    ["bundledAvailable"] = bundleDirectory != null,
                     ["available"] = available,
                     ["version"] = version,
                     ["supportedSources"] = new JArray("selected", "asset", "scene", "game"),
                     ["supportedImageExtensions"] = new JArray(ImageExtensions),
                     ["setup"] = available ? "Ready for local OCR." :
-                        "Install Tesseract OCR and set its executable in Window > Wasim Development > Unity MCP Bridge, or add tesseract to PATH."
+                        "The Windows-x64 Tesseract bundle is not present or cannot start. Update MCP2UNITY from a revision containing Tools~/OCR/win-x64, or configure an external Tesseract executable in Unity MCP Bridge."
                 };
             }
 
@@ -97,7 +105,8 @@ namespace WasimDevelopment.UnityMcpBridge
 
                 string stdout, stderr;
                 int exitCode = Run(executable, Quote(imageFile) + " stdout -l " +
-                    language + " --psm " + psm,
+                    language + " --psm " + psm +
+                    (tessdata == null ? string.Empty : " --tessdata-dir " + Quote(tessdata)),
                     OcrTimeoutMilliseconds, out stdout, out stderr);
                 if (exitCode != 0)
                     throw new InvalidOperationException(
@@ -111,6 +120,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 return new JObject
                 {
                     ["engine"] = "Tesseract (local only)",
+                    ["provider"] = bundled ? "bundled-windows-x64" : "external-fallback",
                     ["source"] = source,
                     ["image"] = displaySource,
                     ["language"] = language,
@@ -173,8 +183,33 @@ namespace WasimDevelopment.UnityMcpBridge
             return full;
         }
 
-        private static string ResolveExecutable()
+        // Bundled OCR is retrieved from Unity's resolved Git UPM package folder,
+        // not from Assets/ and not from an untrusted MCP-provided path.
+        // There is deliberately no runtime download or installer.
+        internal static string GetBundledOcrDirectory()
         {
+            if (Application.platform != RuntimePlatform.WindowsEditor ||
+                IntPtr.Size != 8)
+                return null;
+            PackageInfo package = PackageInfo.FindForPackageName("com.musafirex.mcp2unity");
+            if (package == null || string.IsNullOrWhiteSpace(package.resolvedPath))
+                return null;
+            string root = Path.GetFullPath(package.resolvedPath);
+            string directory = Path.Combine(root, "Tools~", "OCR", "win-x64");
+            string executable = Path.Combine(directory, "tesseract.exe");
+            string models = Path.Combine(directory, "tessdata", "eng.traineddata");
+            if (!File.Exists(executable) || !File.Exists(models))
+                return null;
+            if ((File.GetAttributes(executable) & FileAttributes.ReparsePoint) != 0 ||
+                (File.GetAttributes(models) & FileAttributes.ReparsePoint) != 0)
+                return null;
+            return directory;
+        }
+
+        private static string ResolveExecutable(string bundleDirectory)
+        {
+            if (bundleDirectory != null)
+                return Path.Combine(bundleDirectory, "tesseract.exe");
             string configured = BridgePreferences.TesseractExecutablePath;
             if (!string.Equals(configured, "tesseract", StringComparison.OrdinalIgnoreCase))
                 return configured;
