@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -33,6 +35,27 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 foreach (JToken child in array)
                     foreach (JObject nested in Phase7WalkJsonObjects(child))
                         yield return nested;
+        }
+
+        [Test]
+        public void Release054UpmDescriptionListsAll49CatalogTools()
+        {
+            PackageInfo package = PackageInfo.FindForPackageName("com.musafirex.mcp2unity");
+            Assert.NotNull(package, "MCP2UNITY Git UPM package is not installed.");
+            string manifest = Path.Combine(package.resolvedPath, "package.json");
+            Assert.IsTrue(File.Exists(manifest), manifest);
+            JObject upm = JObject.Parse(File.ReadAllText(manifest));
+            Assert.AreEqual("0.5.4", (string)upm["version"]);
+            Assert.AreEqual(BridgeVersion.PackageVersion, (string)upm["version"]);
+            string description = (string)upm["description"];
+            Assert.IsFalse(string.IsNullOrWhiteSpace(description));
+            Assert.IsTrue(description.Contains("49 MCP tools"), "UPM must advertise all tools.");
+            foreach (JObject tool in McpToolCatalog.Build().OfType<JObject>())
+            {
+                string name = (string)tool["name"];
+                Assert.IsTrue(description.Contains(name),
+                    name + " is missing from the Unity Package Manager description.");
+            }
         }
 
         [Test]
