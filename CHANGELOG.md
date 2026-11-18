@@ -1,9 +1,9 @@
-## Local image OCR and portable Windows engine (2026-11-19 — integration and native CI verification in progress)
+## Local image OCR and portable Windows engine (2026-11-19 — native CI PASSED, Unity validation pending)
 
 - Added the **49th MCP tool**, `unity_read_image_text`, to extract text from selected Project image assets, `Assets/` image files, and Scene/Game View captures. `source=check` reports whether the optional, separately installed **Tesseract OCR** is available. Supports `eng`, `msa` and other installed language packs; page-segmentation options, bounded output, safe path handling and cleanup of temporary captured screenshots.
 - No OCR web service. **Recognized text is returned to the MCP client**. A new Windows x64 bundler uses official MSYS2 Tesseract/Leptonica, recursive native DLL dependencies, English/Malay/Indonesian models and license files; GitHub Actions runs a real OCR smoke test before committing binaries to the UPM repository. Runtime prioritizes the bundled engine and packaged tessdata, falling back to a configured/system executable on unsupported platforms or until the native bundle is published.
 - Added `Tests/Editor/ImageTextReaderIntegrationTests.cs` with five scoped tests and updated expected MCP tool counts **48 → 49** in existing Unity and Windows stability checks. Documentation: `Documentation~/IMAGE_OCR.md`.
-- **Not yet validated in the connected Unity Editor after a UPM refresh.** The earlier **237/237** EditMode success belongs to the 48-tool Animator build. OCR engine setup and one real-image recognition test remain necessary before treating OCR as operational.
+- **Native Windows CI PASSED**: [GitHub Actions run 44417916862](https://github.com/MusafirEx/MCP2UNITY/actions/runs/44417916862) installed Tesseract **5.5.4**, recursively bundled native dependencies and `eng/msa/ind` models, captured **48 MSYS2 dependency license files**, and succeeded at an isolated real-image OCR smoke test. The action committed the **37.0 MiB** package under `Tools~/OCR/win-x64/` with SHA-256 `bundle-manifest.json` into `main`. **Unity compilation, 49-tool contract and in-Editor OCR remain unverified** after UPM refresh. Earlier **237/237** EditMode success belongs only to the former 48-tool build.
 
 ## Animator Controller graph editing (2026-11-17 — Unity EditMode regression PASSED)
 
