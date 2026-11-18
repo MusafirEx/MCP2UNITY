@@ -1,0 +1,89 @@
+name: Bundle Windows-x64 Tesseract OCR
+
+# The native runtime and traineddata are committed into the Git UPM package.
+# No downloads/installers are needed at Unity Editor runtime.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/bundle-tesseract-windows.yml"
+      - "Tools~/OCR/build_windows_bundle.py"
+      - "Tools~/OCR/licenses/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tesseract-portable-main
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout MCP2UNITY
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Install Tesseract and three language packs from MSYS2 UCRT64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-tesseract-ocr
+            mingw-w64-ucrt-x86_64-tesseract-data-eng
+            mingw-w64-ucrt-x86_64-tesseract-data-msa
+            mingw-w64-ucrt-x86_64-tesseract-data-ind
+
+      - name: Show installed native engine and model languages
+        shell: msys2 {0}
+        run: |
+          tesseract --version
+          tesseract --list-langs --tessdata-dir /ucrt64/share/tessdata
+          pacman -Q mingw-w64-ucrt-x86_64-tesseract-ocr
+
+      - name: Set up Python (packager only)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deterministic packaging dependencies
+        shell: pwsh
+        run: python -m pip install pefile==2024.8.26 Pillow==11.1.0
+
+      - name: Stage binary, DLLs, eng/msa/ind, licenses and validate offline OCR
+        shell: pwsh
+        env:
+          MSYS2_UCRT64_ROOT: C:\msys64\ucrt64
+        run: python "Tools~/OCR/build_windows_bundle.py"
+
+      - name: Ensure file size is below GitHub's individual-file limit
+        shell: pwsh
+        run: |
+          $tooLarge = Get-ChildItem "Tools~/OCR/win-x64" -File -Recurse |
+            Where-Object { $_.Length -ge 100MB }
+          if ($tooLarge) {
+            $tooLarge | Select-Object FullName, Length | Format-Table
+            throw "A binary is too large for a Git UPM package stored in GitHub."
+          }
+
+      - name: Commit validated portable engine to main UPM package
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "Tools~/OCR/win-x64"
+          if (git diff --cached --quiet) {
+            Write-Host "Portable OCR engine files are unchanged."
+            exit 0
+          }
+          git commit -m "build(ocr): bundle tested portable Tesseract x64 and language data [skip ci]"
+          # A concurrent author edit could move main. Rebase only after all native
+          # packaging and smoke tests passed; avoid overwriting source edits.
+          git pull --rebase origin main
+          git push origin HEAD:main
