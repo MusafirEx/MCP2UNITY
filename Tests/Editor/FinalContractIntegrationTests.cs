@@ -161,7 +161,7 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         {
             JObject status = (JObject)UnityToolExecutor.Execute(
                 "unity_get_status", new JObject());
-            Assert.AreEqual("0.5.2", (string)status["bridgeVersion"]);
+            Assert.AreEqual("0.5.4", (string)status["bridgeVersion"]);
             Assert.AreEqual(49, (int)status["advertisedToolCount"]);
             CollectionAssert.AreEquivalent(
                 McpToolCatalog.Build().Select(x => (string)x["name"]).ToArray(),
