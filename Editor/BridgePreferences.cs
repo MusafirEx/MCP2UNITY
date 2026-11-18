@@ -54,6 +54,15 @@ namespace WasimDevelopment.UnityMcpBridge
             set => EditorPrefs.SetString(Prefix + "NgrokExecutablePath", string.IsNullOrWhiteSpace(value) ? "ngrok" : value.Trim());
         }
 
+        // Tesseract runs locally; the configured executable is never supplied
+        // by a remote MCP tool request.
+        public static string TesseractExecutablePath
+        {
+            get => EditorPrefs.GetString(Prefix + "TesseractExecutablePath", "tesseract");
+            set => EditorPrefs.SetString(Prefix + "TesseractExecutablePath",
+                string.IsNullOrWhiteSpace(value) ? "tesseract" : value.Trim());
+        }
+
         public static string NgrokPublicUrl
         {
             get => EditorPrefs.GetString(Prefix + "NgrokPublicUrl", string.Empty);
