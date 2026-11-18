@@ -156,7 +156,7 @@ namespace WasimDevelopment.UnityMcpBridge
                 BridgePreferences.TesseractExecutablePath = tesseract;
                 BridgePreferences.StableNgrokUrl = stable;
                 CompanionIpc.WriteConfig();
-                _message = "Settings saved. Restart the companion to apply port or ngrok changes.";
+                _message = "Settings saved. OCR path applies immediately; restart the companion if you changed port or ngrok settings.";
                 _messageType = MessageType.Info;
             }
             EditorGUILayout.EndVertical();
