@@ -1,3 +1,10 @@
+## Local image OCR (2026-11-19 — implementation on `main`, Unity verification pending)
+
+- Added the **49th MCP tool**, `unity_read_image_text`, to extract text from selected Project image assets, `Assets/` image files, and Scene/Game View captures. `source=check` reports whether the optional, separately installed **Tesseract OCR** is available. Supports `eng`, `msa` and other installed language packs; page-segmentation options, bounded output, safe path handling and cleanup of temporary captured screenshots.
+- No OCR web service and no bundled OCR binary. Image processing is local; **recognized text is returned to the MCP client**. The local Tesseract executable is configured in **Window → Wasim Development → Unity MCP Bridge** or found on PATH / standard Windows installation locations.
+- Added `Tests/Editor/ImageTextReaderIntegrationTests.cs` with five scoped tests and updated expected MCP tool counts **48 → 49** in existing Unity and Windows stability checks. Documentation: `Documentation~/IMAGE_OCR.md`.
+- **Not yet validated in the connected Unity Editor after a UPM refresh.** The earlier **237/237** EditMode success belongs to the 48-tool Animator build. OCR engine setup and one real-image recognition test remain necessary before treating OCR as operational.
+
 ## Animator Controller graph editing (2026-11-17 — Unity EditMode regression PASSED)
 
 - **48th MCP tool:** `unity_propose_animator_controller_edit` supports batches of 1–50 ordered, restricted commands: `addParameter`, `setParameterDefault`, `addState`, `setState`, `setDefaultState`, `addTransition`, `setTransition`, `removeTransition`, and `setLayer`.
