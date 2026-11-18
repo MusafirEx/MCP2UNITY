@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
@@ -79,8 +80,9 @@ namespace WasimDevelopment.UnityMcpBridge
                         ["height"] = height
                     });
                     JArray content = capture["_mcpContent"] as JArray;
-                    string base64 = (string)content?.OfType<JObject>()
-                        .FirstOrDefault(x => (string)x["type"] == "image")?["data"];
+                    JObject image = content == null ? null : content.OfType<JObject>()
+                        .FirstOrDefault(x => (string)x["type"] == "image");
+                    string base64 = (string)image?["data"];
                     if (string.IsNullOrEmpty(base64))
                         throw new InvalidOperationException("Unity view capture returned no image.");
                     byte[] bytes = Convert.FromBase64String(base64);
@@ -226,6 +228,8 @@ namespace WasimDevelopment.UnityMcpBridge
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 CreateNoWindow = true
             };
             try
