@@ -1,7 +1,7 @@
-## Local image OCR (2026-11-19 — implementation on `main`, Unity verification pending)
+## Local image OCR and portable Windows engine (2026-11-19 — integration and native CI verification in progress)
 
 - Added the **49th MCP tool**, `unity_read_image_text`, to extract text from selected Project image assets, `Assets/` image files, and Scene/Game View captures. `source=check` reports whether the optional, separately installed **Tesseract OCR** is available. Supports `eng`, `msa` and other installed language packs; page-segmentation options, bounded output, safe path handling and cleanup of temporary captured screenshots.
-- No OCR web service and no bundled OCR binary. Image processing is local; **recognized text is returned to the MCP client**. The local Tesseract executable is configured in **Window → Wasim Development → Unity MCP Bridge** or found on PATH / standard Windows installation locations.
+- No OCR web service. **Recognized text is returned to the MCP client**. A new Windows x64 bundler uses official MSYS2 Tesseract/Leptonica, recursive native DLL dependencies, English/Malay/Indonesian models and license files; GitHub Actions runs a real OCR smoke test before committing binaries to the UPM repository. Runtime prioritizes the bundled engine and packaged tessdata, falling back to a configured/system executable on unsupported platforms or until the native bundle is published.
 - Added `Tests/Editor/ImageTextReaderIntegrationTests.cs` with five scoped tests and updated expected MCP tool counts **48 → 49** in existing Unity and Windows stability checks. Documentation: `Documentation~/IMAGE_OCR.md`.
 - **Not yet validated in the connected Unity Editor after a UPM refresh.** The earlier **237/237** EditMode success belongs to the 48-tool Animator build. OCR engine setup and one real-image recognition test remain necessary before treating OCR as operational.
 
