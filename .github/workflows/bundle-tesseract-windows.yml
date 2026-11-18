@@ -59,7 +59,7 @@ jobs:
       - name: Stage binary, DLLs, eng/msa/ind, licenses and validate offline OCR
         shell: pwsh
         env:
-          MSYS2_UCRT64_ROOT: C:\msys64\ucrt64
+          MSYS2_UCRT64_ROOT: ${{ runner.temp }}\msys64\ucrt64
         run: python "Tools~/OCR/build_windows_bundle.py"
 
       - name: Ensure file size is below GitHub's individual-file limit
