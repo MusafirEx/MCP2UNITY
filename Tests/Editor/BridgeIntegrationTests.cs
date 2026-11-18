@@ -405,7 +405,7 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
                 BridgePreferences.AllowPackageScripts = true;
                 Assert.IsTrue(ProjectSecurity.TryResolveReadableScript("Packages/com.musafirex.mcp2unity/Editor/BridgeVersion.cs",
                     out string path, out string error), error);
-                StringAssert.Contains("0.5.2", File.ReadAllText(path));
+                StringAssert.Contains("0.5.4", File.ReadAllText(path));
                 Assert.IsFalse(ProjectSecurity.TryResolveReadableScript("Assets/../Library/hidden.cs", out _, out _));
             }
             finally { BridgePreferences.AllowPackageScripts = old; }
