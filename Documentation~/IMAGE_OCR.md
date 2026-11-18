@@ -4,9 +4,19 @@
 
 ## Engine and privacy
 
-OCR is performed **locally with the optional Tesseract executable**. MCP2UNITY never uploads the image to an OCR API or downloads OCR models at runtime. The **extracted text is returned to the requesting MCP client** as ordinary tool output. Install Tesseract OCR separately on the same machine as Unity and install the corresponding language-data packs. Typical language codes: `eng` (English), `msa` (Malay), `ind` (Indonesian). The language must exist in the Tesseract installation; this package does not bundle any OCR binaries, fonts or traineddata.
+OCR is performed **locally with the bundled Tesseract executable on Windows x64, or an optional external fallback**. MCP2UNITY never uploads the image to an OCR API or downloads OCR models at runtime. The **extracted text is returned to the requesting MCP client** as ordinary tool output. On Windows x64, the published native bundle includes the engine and eng/msa/ind language packs; for fallback installations, install Tesseract OCR and its language data separately. Typical language codes: `eng` (English), `msa` (Malay), `ind` (Indonesian). The language must exist in the Tesseract installation; this package does not bundle any OCR binaries, fonts or traineddata.
 
 On Windows: add `tesseract.exe` to PATH, or set the local executable path in **Window → Wasim Development → Unity MCP Bridge → Companion and tunnel settings → Tesseract OCR executable**. The default `tesseract` setting also checks standard `Program Files/Tesseract-OCR/tesseract.exe` locations. This is a local Editor preference, **not** an MCP argument; remote tool calls cannot choose an arbitrary executable or CLI flags.
+
+## Portable Tesseract shipped inside Git UPM (Windows x64)
+
+MCP2UNITY now **prefers the engine bundled in the resolved package** at `Tools~/OCR/win-x64/tesseract.exe`, with `tessdata/eng.traineddata`, `msa.traineddata`, and `ind.traineddata`. It passes `--tessdata-dir` explicitly and runs with `UseShellExecute=false`. Windows does **not** need an external Tesseract installation once the native folder is published in the branch/revision installed by UPM.
+
+The native vendor files are built by [GitHub Actions](../.github/workflows/bundle-tesseract-windows.yml) with [Tools~/OCR/build_windows_bundle.py](../Tools~/OCR/build_windows_bundle.py), using the official MSYS2 UCRT64 Tesseract package, recursively detected DLL imports, traineddata language packages and captured third-party licenses. The workflow creates `bundle-manifest.json` containing SHA-256 for each packaged file and checks an isolated (no MSYS2 PATH) real-image OCR smoke test. The validated DLL, EXE and models are **committed to the same Git repository** for Unity Package Manager to retrieve. A failed build does not publish untested binaries.
+
+The first supported native target is **Windows x64 Editor only**. Non-Windows Unity installations and revisions before the binary bundle has been committed retain the existing explicit/system-engine fallback. No binaries are downloaded or installed at Unity runtime. The local executable setting in Unity MCP Bridge remains available for fallback; when the bundled version exists, it takes priority.
+
+**Deployment check:** verify the actual `Tools~/OCR/win-x64/tesseract.exe` and `bundle-manifest.json` are present on `main`. Merely adding a CI workflow does not ship an executable; successful CI completion and a UPM update to a revision containing the committed binaries are required.
 
 ## Supported sources
 
