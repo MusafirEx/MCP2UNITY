@@ -40,6 +40,16 @@ namespace WasimDevelopment.UnityMcpBridge
                     P("includeSerialized", Bool(true)), P("udonVariables", Strings(32)))));
             tools.Add(Tool("unity_capture_view", "Return an MCP image of the Scene camera render or focused Game View. Scene capture excludes editor gizmos. Requires interactive Unity.",
                 Schema(P("view", Enum("scene", "game")), P("width", Int(960, 64, 1280)), P("height", Int(540, 64, 1280)))));
+            tools.Add(Tool("unity_read_image_text",
+                "Extract text locally with Tesseract OCR from selected/Assets image or Scene/Game View capture. Use source=check to verify local Tesseract availability. Does not transmit images to external OCR services. Requires separately installed Tesseract and appropriate language packs; Game View must be focused.",
+                Schema(
+                    P("source", Enum("check", "selected", "asset", "scene", "game")),
+                    P("path", Str()),
+                    P("language", Str()),
+                    P("pageSegmentation", Int(6, 3, 11)),
+                    P("maximumCharacters", Int(4000, 100, 16000)),
+                    P("width", Int(1280, 64, 1280)),
+                    P("height", Int(720, 64, 1280)))));
             tools.Add(Tool("unity_propose_change_set", "Create a pending set of 1-50 operations. User must enable change sets and approve inside Unity. Saved clean scenes, stable GlobalObjectIds and existing destination folders are required. Operations: set_property, set_ui_layout, add_component, create_gameobject, create_ui, delete_gameobject, bind_ui_button_event, create_script, replace_script, save_prefab. New aliases use $name. Existing scripts require expectedSha256. No immediate project mutation.",
                 Required(Schema(P("summary", Str()), P("operations", new JObject {
                     ["type"] = "array", ["minItems"] = 1, ["maxItems"] = 50,
