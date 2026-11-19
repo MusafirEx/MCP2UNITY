@@ -1,3 +1,9 @@
+## Unity 2022.3 compilation compatibility fix — 2026-11-19
+
+- Fixed `CS0117` in `Editor/ImageTextReader.cs` by replacing the unavailable `PackageInfo.FindForPackageName` call with `PackageInfo.GetAllRegisteredPackages().FirstOrDefault(...)`, which is already used elsewhere in the package.
+- Fixed the same API call in `Tests/Editor/FinalContractIntegrationTests.cs` to prevent a test-assembly compile error.
+- Release remains **0.5.4**, with all 49 MCP tools and bundled Windows OCR unchanged. Source changes are committed; end-to-end Unity recompile after Git UPM refresh remains to be verified.
+
 ## MCP2UNITY v0.5.4 — OCR + Animator Controller (2026-11-19)
 
 - **Release metadata:** Bumped `package.json` and `Editor/BridgeVersion.cs` from **0.5.2 to 0.5.4**. Aligned the Unity Editor contract tests, package-reader test and Windows companion test fixture.
