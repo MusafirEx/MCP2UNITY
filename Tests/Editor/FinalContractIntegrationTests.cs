@@ -41,7 +41,8 @@ namespace WasimDevelopment.UnityMcpBridge.Tests
         [Test]
         public void Release054UpmDescriptionListsAll49CatalogTools()
         {
-            PackageInfo package = PackageInfo.FindForPackageName("com.musafirex.mcp2unity");
+            PackageInfo package = PackageInfo.GetAllRegisteredPackages()
+                .FirstOrDefault(p => p.name == "com.musafirex.mcp2unity");
             Assert.NotNull(package, "MCP2UNITY Git UPM package is not installed.");
             string manifest = Path.Combine(package.resolvedPath, "package.json");
             Assert.IsTrue(File.Exists(manifest), manifest);
