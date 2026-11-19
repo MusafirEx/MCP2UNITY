@@ -191,7 +191,8 @@ namespace WasimDevelopment.UnityMcpBridge
             if (Application.platform != RuntimePlatform.WindowsEditor ||
                 IntPtr.Size != 8)
                 return null;
-            PackageInfo package = PackageInfo.FindForPackageName("com.musafirex.mcp2unity");
+            PackageInfo package = PackageInfo.GetAllRegisteredPackages()
+                .FirstOrDefault(p => p.name == "com.musafirex.mcp2unity");
             if (package == null || string.IsNullOrWhiteSpace(package.resolvedPath))
                 return null;
             string root = Path.GetFullPath(package.resolvedPath);
